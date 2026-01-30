@@ -57,7 +57,7 @@ async function ask(question) {
 function showHeader() {
     console.clear();
     ui.setLang(engine.getLang());
-    console.log(ui.getBanner());
+    console.log(ui.getBanner(pkg.version));
     console.log(ui.msg('gray', ui.separator));
 }
 

@@ -1,6 +1,5 @@
 /**
  * OpenClawForJun UI 样式与翻译
- * 2026-01-30 Final Polish
  */
 
 const colors = {
@@ -19,6 +18,7 @@ const i18n = {
     zh: {
         title: "OpenClaw 智能管理中心",
         author: "作者: Jun",
+        version: "当前版本",
         mainPrompt: "请选择分类编号或操作指令",
         back: "返回主菜单",
         editPrompt: "请输入编号进行修改",
@@ -30,7 +30,7 @@ const i18n = {
         langSwitch: "切换语言 (Switch Language)",
         init: "快速初始化向导",
         restart: "重启网关服务",
-        baseOn: "本项目基于开源项目",
+        baseOn: "基于开源项目",
         selectIdx: "请选择序号",
         current: "当前",
         none: "未设置"
@@ -38,6 +38,7 @@ const i18n = {
     en: {
         title: "OpenClaw Management Center",
         author: "Author: Jun",
+        version: "Version",
         mainPrompt: "Choose a category or command",
         back: "Back to Main Menu",
         editPrompt: "Enter number to edit",
@@ -63,40 +64,38 @@ module.exports = {
     setLang(l) { currentLang = l; },
     t(key) { return i18n[currentLang][key] || key; },
     
-    getBanner() {
+    getBanner(version) {
         const text = i18n[currentLang];
-        const duck = `
-      ${colors.yellow}  ,,            ,,     ,,     ,,${colors.reset}
-      ${colors.yellow} (  ' )>       (  )>  (  )>  (  )>${colors.reset}
-      ${colors.yellow}< (  /   ~~~~  ( /    ( /    ( /${colors.reset}
-      ${colors.yellow} \`---'         \`-'    \`-'    \`-'${colors.reset}
-${colors.blue}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~${colors.reset}`;
+        // 重新设计的可爱单鸭
+        const duck = [
+            `      ${colors.yellow}  __      ${colors.reset}`,
+            `      ${colors.yellow} <(o )___ ${colors.reset}`,
+            `      ${colors.yellow}  ( ._> / ${colors.reset}`,
+            `      ${colors.yellow}   \`---'  ${colors.reset}`,
+            ` ${colors.blue}~~~~~~~~~~~~~~~~~~${colors.reset}`
+        ];
 
         const boxTop    = colors.cyan + '┌──────────────────────────────────────────────────┐' + colors.reset;
         const boxEmpty  = colors.cyan + '│                                                  │' + colors.reset;
         const boxBottom = colors.cyan + '└──────────────────────────────────────────────────┘' + colors.reset;
 
-        // 拼接头部
         return `
 ${boxTop}
 ${boxEmpty}
-${this.wrapInBox(duck.split('\n')[1])}
-${this.wrapInBox(duck.split('\n')[2])}
-${this.wrapInBox(duck.split('\n')[3])}
-${this.wrapInBox(duck.split('\n')[4])}
-${this.wrapInBox(duck.split('\n')[5])}
+${this.wrapInBox(duck[0])}
+${this.wrapInBox(duck[1])}
+${this.wrapInBox(duck[2])}
+${this.wrapInBox(duck[3])}
+${this.wrapInBox(duck[4])}
 ${boxEmpty}
 ${this.wrapInBox(colors.bold + this.centerText(text.title, 48) + colors.reset)}
-${this.wrapInBox(colors.gray + this.centerText(text.author, 48) + colors.reset)}
+${this.wrapInBox(colors.gray + this.centerText(`${text.author} | v${version}`, 48) + colors.reset)}
 ${boxBottom}
     `;
     },
 
-    // 辅助函数：将一行内容包在边框内并确保对齐
     wrapInBox(content) {
-        // 剥离 ANSI 颜色代码计算真实长度
         const cleanContent = content.replace(/\x1b\[[0-9;]*m/g, '');
-        // 处理 CJK 字符宽度
         const visualLen = cleanContent.replace(/[\u4e00-\u9fa5]/g, 'aa').length;
         const padding = 50 - visualLen;
         const leftPad = Math.floor(padding / 2);
@@ -111,9 +110,7 @@ ${boxBottom}
     },
 
     separator: '──────────────────────────────────────────────────',
-    
     msg(color, text) { return `${colors[color] || ''}${text}${colors.reset}`; },
-
     categoryIcon(id) {
         const icons = { core: '🧠', channels: '📱', security: '🛡️' };
         return icons[id] || '•';
