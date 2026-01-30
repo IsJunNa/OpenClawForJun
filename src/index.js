@@ -2,11 +2,11 @@
 
 /**
  * OpenClawForJun 核心入口
- * 全面优化版 - UI美化 + 更新修复 + 交互增强
+ * 优化版 - 修复逻辑问题
  * 作者: Jun
  */
 
-const { execSync, spawn } = require('child_process');
+const { execSync } = require('child_process');
 const readline = require('readline');
 const SCHEMA = require('./config-map');
 const engine = require('./config-engine');
@@ -18,14 +18,14 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-// --- 优雅退出处理 ---
+// 优雅退出
 process.on('SIGINT', () => {
-    console.log(ui.msg('yellow', '\n\n👋 已退出 OpenClaw 管理中心，下次见！'));
+    console.log(ui.msg('yellow', '\n\n已退出 OpenClaw 管理中心'));
     process.exit(0);
 });
 
-// --- 基础工具函数 ---
-function simpleAsk(q) {
+// 工具函数
+function ask(q) {
     return new Promise(resolve => rl.question(q, resolve));
 }
 
@@ -43,33 +43,11 @@ function isNewer(remote, local) {
     return false;
 }
 
-// --- Spinner 动画显示 ---
-function showSpinner(message, duration = 2000) {
-    return new Promise(resolve => {
-        const frames = ui.spinnerFrames;
-        let i = 0;
-        process.stdout.write('\n');
-        const interval = setInterval(() => {
-            const frame = ui.colors.cyan + frames[i % frames.length] + ui.colors.reset;
-            process.stdout.write(`\r${frame} ${message}`);
-            i++;
-        }, 80);
-
-        setTimeout(() => {
-            clearInterval(interval);
-            process.stdout.write('\r' + ' '.repeat(message.length + 5) + '\r');
-            resolve();
-        }, duration);
-    });
-}
-
-// --- 版本检查 (优化版) ---
+// 版本检查
 async function checkUpdate() {
-    const lang = engine.getLang();
-    console.log(ui.msg('cyan', `\n${ui.icons.loading} ${ui.t('updating')}`));
+    console.log(ui.info('正在检查更新...'));
 
     try {
-        // 增加超时和重试
         const latestRaw = execSync(
             `curl -s --connect-timeout 5 --max-time 10 "https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/package.json?v=${Date.now()}"`,
             { encoding: 'utf8', timeout: 15000 }
@@ -78,46 +56,37 @@ async function checkUpdate() {
         const latestPkg = JSON.parse(latestRaw);
 
         if (isNewer(latestPkg.version, pkg.version)) {
-            console.log('\n' + ui.infoBox(
-                `${ui.icons.fire} ${ui.t('updateFound')}`,
-                `${ui.msg('yellow', '线上版本')}: v${latestPkg.version}\n${ui.msg('gray', '本地版本')}: v${pkg.version}`,
-                'warning'
-            ));
+            console.log(ui.warning(`发现新版本: v${latestPkg.version} (当前: v${pkg.version})`));
+            console.log(`\n  1. 立即更新`);
+            console.log(`  2. 跳过\n`);
 
-            console.log(`\n  ${ui.colors.green}1.${ui.colors.reset} ${ui.icons.rocket} ${ui.t('updateNow')}`);
-            console.log(`  ${ui.colors.gray}2.${ui.colors.reset} ${ui.icons.arrow} ${ui.t('updateLater')}`);
-
-            const choice = await simpleAsk(`\n${ui.colors.cyan}👉 请输入序号: ${ui.colors.reset}`);
+            const choice = await ask('请选择 [1/2]: ');
 
             if (choice === '1') {
-                console.log(ui.success('\n正在执行全自动更新...'));
-                await showSpinner('下载中...', 1500);
-
+                console.log(ui.info('正在更新...'));
                 const cmd = process.platform === 'win32'
                     ? `powershell -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.ps1'))"`
                     : `curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash`;
 
                 try {
                     execSync(cmd, { stdio: 'inherit' });
-                    console.log(ui.success('\n更新完成！请重新运行 openclaw-jun'));
+                    console.log(ui.success('更新完成，请重新运行'));
                 } catch (e) {
-                    console.log(ui.error('\n更新失败，请手动运行安装脚本'));
+                    console.log(ui.error('更新失败'));
                 }
                 process.exit(0);
-            } else {
-                console.log(ui.msg('gray', '\n已跳过更新'));
             }
         } else {
-            console.log(ui.success('当前已是最新版本'));
+            console.log(ui.success('已是最新版本'));
         }
     } catch (e) {
-        console.log(ui.warning(ui.t('noNetwork')));
+        console.log(ui.warning('无法检查更新，跳过'));
     }
 
     await sleep(500);
 }
 
-// --- 动态加载交互组件 ---
+// 加载 enquirer
 let Select, Input, Toggle;
 try {
     const enquirer = require('enquirer');
@@ -125,180 +94,122 @@ try {
     Input = enquirer.Input;
     Toggle = enquirer.Toggle;
 } catch (e) {
-    console.log(ui.error('\n运行环境不完整 (缺失组件: enquirer)'));
-    console.log(ui.warning('请重新运行安装脚本以修复环境:'));
-    console.log(ui.msg('cyan', 'curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash'));
+    console.log(ui.error('缺失 enquirer 组件，请重新安装'));
     process.exit(1);
 }
 
-// --- 业务逻辑 ---
+// 显示头部
 function showHeader() {
     console.clear();
     ui.setLang(engine.getLang());
     console.log(ui.getBanner(pkg.version));
 }
 
-// --- 欢迎信息 (首次使用) ---
-async function showWelcome() {
-    const config = engine.read();
-    if (!config._welcomed) {
-        console.log('\n' + ui.infoBox(
-            `${ui.icons.star} ${ui.t('welcome')}`,
-            `${ui.icons.check} 使用数字键快速选择菜单项\n${ui.icons.check} 按 Ctrl+C 随时退出\n${ui.icons.check} 配置自动保存到 ~/.openclaw/openclaw.json`,
-            'info'
-        ));
-        await simpleAsk(`\n${ui.colors.gray}${ui.t('enterToContinue')}${ui.colors.reset}`);
-        engine.set(config, '_welcomed', true);
-        engine.write(config);
-    }
-}
-
-// --- 操作确认 ---
-async function confirm(message) {
-    const prompt = new Toggle({
-        message: message,
-        enabled: '确认 (Yes)',
-        disabled: '取消 (No)'
-    });
-    return await prompt.run();
-}
-
-// --- 配置编辑 ---
+// 配置编辑
 async function handleEdit(config, item) {
     const lang = engine.getLang();
     const currentVal = engine.get(config, item.key);
     let newValue = '';
 
-    // 显示配置说明
     if (item.desc) {
         console.log(ui.msg('gray', `\n${ui.icons.info} ${item.desc[lang]}`));
     }
 
-    if (item.type === 'boolean') {
-        const prompt = new Toggle({
-            message: item.label[lang],
-            enabled: '开启 (ON)',
-            disabled: '关闭 (OFF)',
-            initial: currentVal === true || currentVal === 'true'
-        });
-        newValue = String(await prompt.run());
-    } else if (item.type === 'enum') {
-        const prompt = new Select({
-            message: item.label[lang],
-            choices: item.options.map(opt => ({
-                name: opt,
-                message: opt.includes('自定义') || opt.includes('Manual') ? ui.msg('yellow', opt) : opt
-            }))
-        });
-        const choice = await prompt.run();
-        if (choice.includes('自定义') || choice.includes('Manual')) {
-            const input = new Input({
-                message: '请输入自定义内容:',
+    try {
+        if (item.type === 'boolean') {
+            const prompt = new Toggle({
+                message: item.label[lang],
+                enabled: 'ON',
+                disabled: 'OFF',
+                initial: currentVal === true || currentVal === 'true'
+            });
+            newValue = String(await prompt.run());
+        } else if (item.type === 'enum') {
+            const prompt = new Select({
+                message: item.label[lang],
+                choices: item.options
+            });
+            const choice = await prompt.run();
+            if (choice.includes('自定义') || choice.includes('Manual')) {
+                const input = new Input({ message: '输入值:', initial: currentVal || '' });
+                newValue = await input.run();
+            } else {
+                newValue = choice;
+            }
+        } else {
+            const prompt = new Input({
+                message: item.label[lang],
                 initial: currentVal || ''
             });
-            newValue = await input.run();
-        } else {
-            newValue = choice;
+            newValue = await prompt.run();
         }
-    } else {
-        const prompt = new Input({
-            message: item.label[lang],
-            initial: currentVal || ''
-        });
-        newValue = await prompt.run();
+    } catch (e) {
+        return; // 用户取消
     }
 
-    if (newValue !== '' && newValue !== currentVal) {
+    if (newValue !== '' && newValue !== String(currentVal)) {
         if (item.isArray && !Array.isArray(newValue)) {
             newValue = [newValue];
         }
         engine.set(config, item.key, newValue);
-
-        // 联动 Key 输入
-        if (item.needsKey && newValue) {
-            console.log(ui.warning(`\n${ui.icons.key} 检测到所选模型需要配对 API Key`));
-            const keyPrompt = new Input({ message: `请输入对应的 API Key:` });
-            const keyVal = await keyPrompt.run();
-            if (keyVal) {
-                const provider = newValue.split('/')[0];
-                engine.set(config, 'auth.profiles.default.apiKey', keyVal);
-                engine.set(config, 'auth.profiles.default.provider', provider);
-                engine.set(config, 'auth.profiles.default.mode', 'api_key');
-            }
-        }
-
         engine.write(config);
-        console.log(ui.success(`\n${ui.t('saveOk')}`));
-        await sleep(800);
+        console.log(ui.success(ui.t('saveOk')));
+        await sleep(600);
     }
 }
 
-// --- 子菜单 ---
+// 子菜单
 async function subMenu(category) {
     const lang = engine.getLang();
+
     while (true) {
         showHeader();
         const config = engine.read();
         const choices = [];
 
-        // 显示分类标题
-        console.log(ui.msg('cyan', `\n${ui.categoryIcon(category.id)} ${category.label[lang]}\n`));
-        console.log(ui.separator('─', 45));
+        console.log(`\n${ui.categoryIcon(category.id)} ${ui.colors.bold}${category.label[lang]}${ui.colors.reset}\n`);
+        console.log(ui.separator());
 
         if (category.subCategories) {
-            // 子分类菜单
             category.subCategories.forEach(sub => {
-                choices.push({
-                    name: sub.id,
-                    message: `${ui.categoryIcon(sub.id)} ${sub.label[lang]}`
-                });
+                choices.push({ name: sub.id, message: `${ui.categoryIcon(sub.id)} ${sub.label[lang]}` });
             });
         } else {
-            // 特殊操作 (如扫码登录)
             if (category.specialActions) {
                 category.specialActions.forEach(act => {
-                    choices.push({
-                        name: 'act_' + act.id,
-                        message: ui.msg('yellow', `${ui.icons.lightning} ${act.label[lang]}`)
-                    });
+                    choices.push({ name: 'act_' + act.id, message: ui.msg('yellow', `>> ${act.label[lang]}`) });
                 });
-                choices.push({ name: 'sep1', message: ui.separator('·', 40), role: 'separator' });
             }
 
-            // 配置项列表
             category.items.forEach((item, i) => {
                 const val = engine.get(config, item.key);
-                let displayVal;
+                let display;
 
                 if (val === undefined || val === null || val === '') {
-                    displayVal = ui.msg('red', '[未设置]');
+                    display = ui.msg('red', '[未设置]');
                 } else if (typeof val === 'boolean') {
-                    displayVal = val ? ui.msg('green', '✓ 已开启') : ui.msg('gray', '✗ 已关闭');
+                    display = val ? ui.msg('green', 'ON') : ui.msg('gray', 'OFF');
                 } else if (Array.isArray(val)) {
-                    displayVal = ui.msg('green', `[${val.length} 项]`);
+                    display = ui.msg('green', `[${val.length}项]`);
                 } else {
-                    const strVal = String(val);
-                    displayVal = ui.msg('green', strVal.length > 25 ? strVal.substring(0, 22) + '...' : strVal);
+                    const str = String(val);
+                    display = ui.msg('green', str.length > 20 ? str.slice(0, 17) + '...' : str);
                 }
 
-                choices.push({
-                    name: String(i),
-                    message: `${item.label[lang]}: ${displayVal}`
-                });
+                choices.push({ name: String(i), message: `${item.label[lang]}: ${display}` });
             });
         }
 
-        choices.push({ name: 'sep2', message: ui.separator('─', 40), role: 'separator' });
-        choices.push({ name: 'back', message: ui.msg('magenta', `${ui.icons.arrow} ${ui.t('back')}`) });
-
-        const prompt = new Select({
-            message: ui.t('selectIdx'),
-            choices: choices.filter(c => c.role !== 'separator' || choices.length < 20),
-            result(value) { return value; }
-        });
+        choices.push({ name: 'back', message: ui.msg('magenta', `<- ${ui.t('back')}`) });
 
         try {
+            const prompt = new Select({
+                message: '选择操作',
+                choices: choices
+            });
+
             const choice = await prompt.run();
+
             if (choice === 'back') return;
 
             if (category.subCategories) {
@@ -307,14 +218,14 @@ async function subMenu(category) {
             } else if (String(choice).startsWith('act_')) {
                 const actId = choice.replace('act_', '');
                 const action = category.specialActions.find(a => a.id === actId);
-                console.log(ui.info(`\n${ui.icons.rocket} 正在执行: ${action.command}...`));
+                console.log(ui.info(`执行: ${action.command}...`));
                 try {
                     execSync(action.command, { stdio: 'inherit' });
-                    console.log(ui.success('\n操作执行完毕'));
+                    console.log(ui.success('完成'));
                 } catch (e) {
-                    console.log(ui.error('\n操作执行失败'));
+                    console.log(ui.error('执行失败'));
                 }
-                await simpleAsk(`\n${ui.t('enterToContinue')}`);
+                await ask('\n按 Enter 继续...');
             } else {
                 const idx = parseInt(choice);
                 if (!isNaN(idx) && category.items[idx]) {
@@ -323,72 +234,37 @@ async function subMenu(category) {
             }
         } catch (e) {
             if (e === '') return;
-            throw e;
         }
     }
 }
 
-// --- 帮助/关于 ---
-async function showHelp() {
-    showHeader();
-    const lang = engine.getLang();
-
-    console.log(ui.infoBox(
-        `${ui.icons.info} 帮助与说明`,
-        `${ui.icons.lobster} OpenClaw 是一个强大的 AI 助手平台
-${ui.icons.check} 支持 WhatsApp/Telegram/Discord 等多个通道
-${ui.icons.check} 可通过浏览器控制、定时任务实现自动化
-${ui.icons.check} 配置文件位置: ~/.openclaw/openclaw.json
-
-${ui.colors.cyan}常用命令:${ui.colors.reset}
-  openclaw gateway start  - 启动网关
-  openclaw status        - 查看状态
-  openclaw doctor        - 诊断问题
-  openclaw logs          - 查看日志
-
-${ui.colors.cyan}项目地址:${ui.colors.reset}
-  https://github.com/IsJunNa/OpenClawForJun
-  https://openclaw.ai`,
-        'info'
-    ));
-
-    await simpleAsk(`\n${ui.t('enterToContinue')}`);
-}
-
-// --- 主菜单 ---
+// 主菜单
 async function main() {
     await checkUpdate();
-    await showWelcome();
 
     while (true) {
         const lang = engine.getLang();
         showHeader();
 
-        // 构建主菜单选项
         const choices = SCHEMA.map((cat, i) => ({
             name: String(i),
             message: `${ui.categoryIcon(cat.id)} ${cat.label[lang]}`
         }));
 
-        // 分隔线
-        choices.push({ name: 'sep', message: ui.separator('─', 40), role: 'separator' });
-
-        // 系统操作
-        choices.push({ name: 'lang', message: `${ui.icons.globe} ${ui.t('langSwitch')}` });
-        choices.push({ name: 'restart', message: `${ui.icons.loading} ${ui.t('restart')}` });
-        choices.push({ name: 'help', message: `${ui.icons.info} 帮助与说明 (Help)` });
-        choices.push({ name: 'exit', message: `${ui.icons.cross} ${ui.t('exit')}` });
-
-        const prompt = new Select({
-            message: ui.t('mainPrompt'),
-            choices: choices.filter(c => c.role !== 'separator')
-        });
+        choices.push({ name: 'lang', message: `[Lang] ${ui.t('langSwitch')}` });
+        choices.push({ name: 'restart', message: `[Srv] ${ui.t('restart')}` });
+        choices.push({ name: 'exit', message: `[Exit] ${ui.t('exit')}` });
 
         try {
+            const prompt = new Select({
+                message: ui.t('mainPrompt'),
+                choices: choices
+            });
+
             const choice = await prompt.run();
 
             if (choice === 'exit') {
-                console.log(ui.msg('yellow', `\n${ui.icons.lobster} 再见！感谢使用 OpenClaw 管理中心\n`));
+                console.log(ui.msg('yellow', '\n再见！\n'));
                 process.exit(0);
             }
 
@@ -398,19 +274,14 @@ async function main() {
             }
 
             if (choice === 'restart') {
-                console.log(ui.warning(`\n${ui.t('restarting')}`));
+                console.log(ui.info(ui.t('restarting')));
                 try {
                     execSync('openclaw gateway restart', { stdio: 'inherit' });
                     console.log(ui.success(ui.t('restartOk')));
                 } catch (e) {
-                    console.log(ui.error('重启失败，请检查网关是否运行'));
+                    console.log(ui.error('失败'));
                 }
-                await sleep(1500);
-                continue;
-            }
-
-            if (choice === 'help') {
-                await showHelp();
+                await sleep(1000);
                 continue;
             }
 
@@ -420,13 +291,12 @@ async function main() {
             }
         } catch (e) {
             if (e === '') continue;
-            throw e;
         }
     }
 }
 
 main().catch(e => {
     if (e === '') process.exit(0);
-    console.error(ui.error('发生错误:'), e);
+    console.error(ui.error('错误:'), e);
     process.exit(1);
 });
