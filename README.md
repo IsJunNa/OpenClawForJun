@@ -1,76 +1,73 @@
 # 🤖 OpenClawForJun
 
-> **OpenClaw (原 Clawd) 智能助手一键部署与全中文配置管理工具**
+> **一键极速部署 OpenClaw (原 Clawd) & 全中文配置管理工具**
 
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)](https://github.com/IsJunNa/OpenClawForJun)
 [![Author](https://img.shields.io/badge/Author-Jun-orange.svg)](https://github.com/IsJunNa)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-green.svg)](#)
+[![GitHub Stars](https://img.shields.io/github/stars/IsJunNa/OpenClawForJun?style=social)](https://github.com/IsJunNa/OpenClawForJun)
 
-`OpenClawForJun` 是一个专为追求极致体验的用户打造的 **OpenClaw (Clawd)** 部署与管理神器。本项目旨在打破原版工具的语言门槛，提供全中文的交互界面、分层化的配置管理以及一键式的环境搭建。
-
----
-
-## 🦆 作者寄语
-
-本项目由 **Jun** 发起并维护。
-> "让技术更有温度，让配置不再痛苦。" —— **Jun** 🦆
+`OpenClawForJun` 是为 **OpenClaw** 量身定制的中文管理增强版。本项目通过自动化的安装脚本与分层级的中文 CLI 菜单，让复杂的 AI 助手配置变得像填空题一样简单。
 
 ---
 
-## ✨ 核心特性
+## 🦆 作者简介
 
-- 🚀 **一键极速安装**：全自动检测 Node.js、Git 环境，一行命令装好 OpenClaw 核心。
-- 🏮 **全中文管理界面**：告别晦涩的英文 JSON，所有配置项均有详细的中文标签与说明。
-- 📂 **分层级配置菜单**：支持分类管理，如「AI 模型」、「消息频道」、「安全策略」等，层级清晰。
-- 🛠️ **初始化向导**：手把手引导完成首次进宫（初次配置），小白也能轻松上手。
-- 🔒 **声明**：本项目完全免费，旨在服务社区，请勿用于商业牟利。
+本项目由 **Jun** 设计并维护。小鸭子图标寓意“向死而生，向阳而行”。
+> "代码不应该有国界，配置不应该有语言障碍。" —— **Jun** 🦆
 
 ---
 
-## 🚀 快速开始
+## ✨ 核心亮点
 
-在终端中粘贴并运行以下命令，即可开启您的 OpenClaw 之旅：
+- 🚀 **五秒装机**：全自动处理 Node.js 环境与核心依赖，安装从未如此简单。
+- 🌏 **母语级交互**：全量配置项中文化，每一项都有贴心的中文解释与建议值。
+- 📂 **分层管理**：输入编号进入子菜单（AI模型、频道、安全、系统），逻辑清晰不迷路。
+- 🛠️ **新手引导**：集成「中文初始化向导」，三分钟带你完成从安装到上线的全过程。
+- 🔄 **一键重启**：改完即生效，内置网关管理指令。
+- 🔒 **声明**：**本项目完全免费**，且声明不对原始 OpenClaw 项目拥有版权，仅作为增强工具辅助使用。
+
+---
+
+## 🚀 快速开始 (仅需一行命令)
+
+打开您的终端，复制粘贴并回车：
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash
 ```
 
-安装完成后，直接输入 `openclaw-jun` 即可进入管理菜单。
+### 🎮 进入管理中心
 
----
-
-## 📋 功能预览
-
-```text
-==========================================
-   🦆 OpenClawForJun 智能管理中心 
-   作者: Jun | 此工具完全免费
-==========================================
-
-1. 核心设置 (AI模型、思考深度...)
-2. 消息频道 (Telegram、WhatsApp...)
-3. 系统配置 (端口、日志、时区...)
-4. 安全与权限 (Bash指令、配置权限...)
-
-0. 开始「中文初始化向导」
-r. 重启网关使配置生效
-q. 退出
+安装完成后，在任何地方输入：
+```bash
+openclaw-jun
 ```
 
 ---
 
-## ⚖️ 免责声明与版权
+## 📖 常见问题 (FAQ)
 
-1. **项目来源**：本项目基于 [OpenClaw (GitHub)](https://github.com/openclaw/openclaw) 开发，特此感谢原作者的杰出贡献。
-2. **版权说明**：本项目脚本归 **Jun** 所有，严禁任何形式的侵权行为。
-3. **安全提醒**：OpenClaw 涉及高度的计算机访问权限，请在受信任的环境中使用。
+**Q: 这个工具会收费吗？**
+A: **绝不收费**。本项目采用 MIT 协议开源，完全免费。
+
+**Q: 为什么我运行脚本报错？**
+A: 请确保您的 Node.js 版本在 v22 以上。如遇权限问题，请在命令前尝试添加 `sudo`。
+
+**Q: 如何更新这个工具？**
+A: 重新运行安装命令即可自动拉取最新版本并覆盖。
 
 ---
 
-## ⭐ 期待您的支持
+## ⚖️ 权利声明
 
-如果您觉得这个工具好用，请给本项目点一个 **Star**！您的支持是我持续优化的动力。
+1. **项目致敬**：核心功能依赖于 [OpenClaw (Official)](https://github.com/openclaw/openclaw)，本项目旨在为中文用户提供更好的交互体验。
+2. **免责**：请妥善保管您的 API Key 与机器人 Token，本项目不会上传任何您的隐私配置。
+
+---
+
+## ⭐ 点个 Star 吧！
+
+如果您觉得这个工具节省了您的时间，请点击页面右上角的 **Star**。每一万个 Star，我就……继续努力更新！
 
 ---
 *Made with ❤️ by Jun*
