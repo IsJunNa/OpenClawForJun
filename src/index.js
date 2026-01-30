@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * OpenClawForJun 核心程序
+ * OpenClawForJun 核心入口
  * 作者: Jun
  */
 
@@ -24,18 +24,20 @@ function showHeader() {
     console.clear();
     ui.setLang(engine.getLang());
     console.log(ui.msg('blue', ui.banner));
+    console.log(`   ${ui.msg('gray', `Author: Jun | License: MIT | Professional Suite`)}`);
     console.log(ui.msg('gray', ui.separator));
 }
 
 async function handleEdit(config, item) {
     const lang = engine.getLang();
-    console.log(`\n${ui.msg('bold', ui.t('current') + ': ' + item.label[lang])}`);
+    console.log(`\n${ui.msg('bold', (lang === 'zh' ? '正在设置: ' : 'Setting: ') + item.label[lang])}`);
+    console.log(`${ui.msg('yellow', '💡 ' + item.desc[lang])}`);
     
     let newValue = '';
     
     if (item.type === 'boolean') {
-        console.log(`\n  1. ${lang === 'zh' ? '开启 (true)' : 'ON (true)'}`);
-        console.log(`  2. ${lang === 'zh' ? '关闭 (false)' : 'OFF (false)'}`);
+        console.log(`\n  1. ${lang === 'zh' ? '开启 (true)' : 'Enable (true)'}`);
+        console.log(`  2. ${lang === 'zh' ? '关闭 (false)' : 'Disable (false)'}`);
         const choice = await ask(`\n${ui.t('selectIdx')}: `);
         if (choice === '1') newValue = 'true';
         else if (choice === '2') newValue = 'false';
@@ -46,19 +48,25 @@ async function handleEdit(config, item) {
         const choice = await ask(`\n${ui.t('selectIdx')} (1-${item.options.length}): `);
         const idx = parseInt(choice) - 1;
         if (item.options[idx]) {
-            newValue = (item.options[idx].includes('自定义') || item.options[idx].includes('Manual')) 
-                ? await ask(`\n${lang === 'zh' ? '请输入内容' : 'Please input'}: `)
-                : item.options[idx];
+            if (item.options[idx].includes('自定义') || item.options[idx].includes('Manual')) {
+                newValue = await ask(`\n${lang === 'zh' ? '请输入内容' : 'Input value'}: `);
+            } else {
+                newValue = item.options[idx];
+            }
         }
     } else {
         newValue = await ask(`\n${ui.t('newValue')}: `);
     }
 
     if (newValue !== '') {
+        // 特殊处理数组 (备份模型)
+        if (item.isArray) {
+            newValue = [newValue];
+        }
         engine.set(config, item.key, newValue);
         engine.write(config);
         console.log(ui.msg('green', `\n${ui.t('saveOk')}`));
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 800));
     }
 }
 
@@ -66,23 +74,32 @@ async function subMenu(category) {
     const lang = engine.getLang();
     while (true) {
         showHeader();
-        console.log(`\n${ui.msg('cyan', '【 ' + category.label[lang] + ' 】')}`);
-        const config = engine.read();
         
-        category.items.forEach((item, index) => {
-            const val = engine.get(config, item.key);
-            const displayVal = val === undefined ? ui.msg('red', `[${ui.t('none')}]`) : ui.msg('green', val);
-            console.log(`  ${ui.msg('yellow', index + 1)}. ${item.label[lang]}: ${displayVal}`);
-        });
-        
-        console.log(`\n  ${ui.msg('magenta', 'b')}. ${ui.t('back')}`);
-        const choice = await ask(`\n👉 ${ui.t('editPrompt')}: `);
-        
-        if (choice.toLowerCase() === 'b') return;
-        
-        const idx = parseInt(choice) - 1;
-        if (category.items[idx]) {
-            await handleEdit(config, category.items[idx]);
+        // 分支：是直接项列表，还是子目录列表？
+        if (category.subCategories) {
+            console.log(`\n${ui.msg('cyan', '【 ' + category.label[lang] + ' 】')}`);
+            category.subCategories.forEach((sub, index) => {
+                console.log(`  ${ui.msg('yellow', index + 1)}. ${sub.label[lang]}`);
+            });
+            console.log(`\n  ${ui.msg('magenta', 'b')}. ${ui.t('back')}`);
+            const choice = await ask(`\n👉 ${ui.t('mainPrompt')}: `);
+            if (choice.toLowerCase() === 'b') return;
+            const idx = parseInt(choice) - 1;
+            if (category.subCategories[idx]) await subMenu(category.subCategories[idx]);
+        } else {
+            console.log(`\n${ui.msg('cyan', '【 ' + category.label[lang] + ' 】')}`);
+            const config = engine.read();
+            category.items.forEach((item, index) => {
+                let val = engine.get(config, item.key);
+                if (item.isArray && Array.isArray(val)) val = val[0];
+                const displayVal = val === undefined ? ui.msg('red', `[${ui.t('none')}]`) : ui.msg('green', val);
+                console.log(`  ${ui.msg('yellow', index + 1)}. ${item.label[lang]}: ${displayVal}`);
+            });
+            console.log(`\n  ${ui.msg('magenta', 'b')}. ${ui.t('back')}`);
+            const choice = await ask(`\n👉 ${ui.t('editPrompt')}: `);
+            if (choice.toLowerCase() === 'b') return;
+            const idx = parseInt(choice) - 1;
+            if (category.items[idx]) await handleEdit(config, category.items[idx]);
         }
     }
 }
@@ -97,7 +114,7 @@ async function main() {
         });
         
         console.log(ui.msg('gray', '\n' + ui.separator));
-        console.log(`  ${ui.msg('cyan', '0')}. 🌟 ${ui.t('init')}`);
+        console.log(`  ${ui.msg('cyan', '0')}. 🚀 ${ui.t('init')}`);
         console.log(`  ${ui.msg('cyan', 'l')}. 🌐 ${ui.t('langSwitch')}`);
         console.log(`  ${ui.msg('cyan', 'r')}. 🔄 ${ui.t('restart')}`);
         console.log(`  ${ui.msg('cyan', 'q')}. 🚪 ${ui.t('exit')}`);
@@ -116,22 +133,19 @@ async function main() {
                 console.log(ui.msg('green', ui.t('restartOk'))); 
             } catch(e) { 
                 console.log(ui.msg('red', '\n❌ ' + (lang === 'zh' ? '重启失败' : 'Restart Failed')));
-                console.log(ui.msg('gray', '------------------------------------------'));
-                console.log(ui.msg('yellow', lang === 'zh' ? '常见原因及对策：' : 'Common Issues & Solutions:'));
-                console.log(lang === 'zh' ? '1. OpenClaw 未运行：请先在终端运行 openclaw gateway start' : '1. OpenClaw not running: Run "openclaw gateway start" first');
-                console.log(lang === 'zh' ? '2. 权限不足：请尝试以管理员身份/sudo运行' : '2. Permissions: Try running as Administrator/sudo');
-                console.log(lang === 'zh' ? '3. 路径错误：确保 openclaw 已在全局变量中' : '3. Path Error: Ensure "openclaw" is in your PATH');
-                console.log(ui.msg('gray', '------------------------------------------'));
+                console.log(ui.msg('yellow', lang === 'zh' ? '常见原因：' : 'Common Reasons:'));
+                console.log(lang === 'zh' ? '1. OpenClaw 未运行' : '1. OpenClaw not running');
+                console.log(lang === 'zh' ? '2. 权限不足' : '2. Insufficient permissions');
             }
-            await new Promise(r => setTimeout(r, 3000));
+            await new Promise(r => setTimeout(r, 2000));
             continue;
         }
         
         if (choice === '0') {
             const config = engine.read();
-            await handleEdit(config, SCHEMA[0].items[0]);
-            await handleEdit(config, SCHEMA[1].items[0]);
-            await handleEdit(config, SCHEMA[1].items[1]);
+            await handleEdit(config, SCHEMA[0].items[0]); // Primary Model
+            await handleEdit(config, SCHEMA[1].subCategories[0].items[0]); // Enable TG Plugin
+            await handleEdit(config, SCHEMA[1].subCategories[0].items[2]); // TG Token
             continue;
         }
         
