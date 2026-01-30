@@ -24,7 +24,6 @@ function showHeader() {
     console.clear();
     ui.setLang(engine.getLang());
     console.log(ui.msg('blue', ui.banner));
-    console.log(`   ${ui.msg('gray', `${ui.t('author')}: Jun | ${ui.t('license')}: MIT | ${ui.t('free')}`)}`);
     console.log(ui.msg('gray', ui.separator));
 }
 
@@ -92,7 +91,6 @@ async function main() {
     while (true) {
         const lang = engine.getLang();
         showHeader();
-        console.log(`\n🚀 ${ui.t('baseOn')} ${ui.msg('blue', 'OpenClaw')}。`);
         
         SCHEMA.forEach((cat, index) => {
             console.log(`  ${ui.msg('yellow', index + 1)}. ${ui.categoryIcon(cat.id)} ${cat.label[lang]}`);
