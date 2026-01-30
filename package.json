@@ -8,5 +8,7 @@
   },
   "author": "Jun",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "enquirer": "^2.4.1"
+  }
 }
