@@ -1,6 +1,6 @@
 {
   "name": "openclaw-for-jun",
-  "version": "1.9.1",
+  "version": "2.0.1",
   "description": "OpenClaw 一键安装与全中文管理工具",
   "main": "src/index.js",
   "bin": {
