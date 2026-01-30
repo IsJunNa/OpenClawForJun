@@ -6,15 +6,49 @@
  */
 
 const readline = require('readline');
-const { execSync } = require('child_process');
+const { execSync, exec } = require('child_process');
 const SCHEMA = require('./config-map');
 const engine = require('./config-engine');
 const ui = require('./cli-ui');
+const pkg = require('../package.json');
 
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
+
+async function checkUpdate() {
+    const lang = engine.getLang();
+    try {
+        // 异步获取远程版本，不影响主界面加载速度
+        const latestRaw = execSync('curl -s --connect-timeout 3 https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/package.json').toString();
+        const latestPkg = JSON.parse(latestRaw);
+        
+        if (latestPkg.version !== pkg.version) {
+            console.log(ui.msg('yellow', `\n🔔 ${lang === 'zh' ? '检测到新版本' : 'New version detected'}: v${latestPkg.version} (当前: v${pkg.version})`));
+            console.log(`  1. ${lang === 'zh' ? '立即更新 (Update Now)' : 'Update Now'}`);
+            console.log(`  2. ${lang === 'zh' ? '暂时忽略 (Ignore)' : 'Ignore'}`);
+            
+            const choice = await ask(`\n👉 ${ui.t('selectIdx')}: `);
+            if (choice === '1') {
+                console.log(ui.msg('green', lang === 'zh' ? '\n正在启动自动更新程序...' : '\nStarting auto-update...'));
+                const cmd = process.platform === 'win32' 
+                    ? `powershell -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.ps1'))"`
+                    : `curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash`;
+                
+                try {
+                    execSync(cmd, { stdio: 'inherit' });
+                    console.log(ui.msg('green', lang === 'zh' ? '\n✅ 更新完成！请重新运行命令。' : '\n✅ Update complete! Please restart.'));
+                    process.exit(0);
+                } catch (e) {
+                    console.log(ui.msg('red', '\n❌ ' + (lang === 'zh' ? '更新失败，请手动运行安装脚本。' : 'Update failed, please run installer manually.')));
+                }
+            }
+        }
+    } catch (e) {
+        // 忽略网络错误，不打断用户
+    }
+}
 
 async function ask(question) {
     return new Promise(resolve => rl.question(question, resolve));
@@ -104,6 +138,9 @@ async function subMenu(category) {
 }
 
 async function main() {
+    // 启动前检查更新
+    await checkUpdate();
+
     while (true) {
         const lang = engine.getLang();
         showHeader();
