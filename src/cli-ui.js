@@ -66,26 +66,19 @@ module.exports = {
     clearPath() { breadcrumb = []; },
     getPath() { return breadcrumb.join(' > '); },
 
-    // 鸭子游泳主题 banner
+    // Jun 主题 banner - 简洁版
     getHeader(version) {
-        const title = i18n[currentLang].title;
-        const line = '─'.repeat(50);
-        const wave = '~'.repeat(50);
+        const line = '━'.repeat(50);
 
-        let header = `\n${colors.yellow}`;
-        header += `       __      __      __\n`;
-        header += `    __(.)< __(.)> __(.)=\n`;
-        header += `    \\___)  \\___)  \\___)${colors.reset}\n`;
-        header += `${colors.cyan}${wave}${colors.reset}\n`;
-        header += `${colors.bold}  ${title}${colors.reset}`;
+        let header = `\n${colors.bgYellow}${colors.black}  🔧 JUN  ${colors.reset}`;
+        header += ` ${colors.bold}OpenClaw 配置管理${colors.reset}`;
         header += `${colors.gray}  v${version}${colors.reset}\n`;
-        header += `${colors.cyan}${line}${colors.reset}\n`;
+        header += `${colors.yellow}${line}${colors.reset}\n`;
 
         // 显示面包屑导航
         if (breadcrumb.length > 0) {
             header += `${colors.dim}  📍 ${breadcrumb.join(' → ')}${colors.reset}\n`;
         }
-
         return header;
     },
 

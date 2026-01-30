@@ -139,13 +139,23 @@ async function editConfig(config, item) {
         }
         engine.set(config, item.key, newVal);
 
-        // 模型选择后显示配置提示
-        if ((item.key.includes('model.primary') || item.key.includes('model.fallbacks')) && newVal && String(newVal).includes('/')) {
+        // 模型选择后提示输入 API Key
+        if (item.needsApiKey && newVal && String(newVal).includes('/')) {
             const modelStr = Array.isArray(newVal) ? newVal[0] : newVal;
             const provider = modelStr.split('/')[0];
-            console.log(ui.info(`已选择 ${provider} 模型，请确保已在环境变量中配置对应的 API Key`));
-            console.log(ui.msg('gray', `  提示: 设置环境变量 ${provider.toUpperCase()}_API_KEY 或在 ~/.openclaw/openclaw.json 中配置`));
-            await sleep(1500);
+            if (provider !== 'ollama') {
+                console.log(ui.info(`${provider} 模型需要 API Key`));
+                try {
+                    const keyPrompt = new Input({ message: `请输入 ${provider.toUpperCase()} API Key (留空跳过):` });
+                    const apiKey = await keyPrompt.run();
+                    if (apiKey && apiKey.trim()) {
+                        console.log(ui.msg('yellow', `请设置环境变量: export ${provider.toUpperCase()}_API_KEY="${apiKey.trim()}"`));
+                        console.log(ui.msg('gray', '或添加到 ~/.zshrc 或 ~/.bashrc 后运行 source ~/.zshrc'));
+                    }
+                } catch (e) {
+                    // 用户取消
+                }
+            }
         }
 
         engine.write(config);
@@ -213,7 +223,9 @@ async function subMenu(cat) {
 
             const prompt = new Select({
                 message: '选择',
-                choices: choices.filter(c => c.role !== 'separator')
+                choices: choices.filter(c => c.role !== 'separator'),
+                pointer: '❯',
+                styles: { primary: c => c }
             });
 
             let choice;
@@ -281,7 +293,9 @@ async function main() {
         try {
             const prompt = new Select({
                 message: ui.t('mainPrompt'),
-                choices: choices.filter(c => c.role !== 'separator')
+                choices: choices.filter(c => c.role !== 'separator'),
+                pointer: '❯',
+                styles: { primary: c => c }
             });
             choice = await prompt.run();
         } catch (e) {

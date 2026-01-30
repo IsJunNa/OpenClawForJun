@@ -14,13 +14,22 @@ module.exports = [
                 label: { zh: "主模型", en: "Primary Model" },
                 desc: { zh: "AI 使用的主要模型，影响回复质量和速度", en: "Main AI model for responses" },
                 type: "enum",
+                needsApiKey: true,
                 options: [
                     "anthropic/claude-sonnet-4-5-20250929",
                     "anthropic/claude-opus-4-5",
+                    "anthropic/claude-3-5-sonnet",
                     "openai/gpt-5.2",
+                    "openai/gpt-4o",
+                    "openai/gpt-4-turbo",
                     "google/gemini-3-pro-preview",
                     "google/gemini-3-flash-preview",
+                    "google/gemini-2.0-flash",
+                    "google/gemini-1.5-pro",
+                    "deepseek/deepseek-chat",
+                    "deepseek/deepseek-coder",
                     "ollama/llama3",
+                    "ollama/qwen2",
                     "自定义"
                 ]
             },
@@ -30,9 +39,15 @@ module.exports = [
                 desc: { zh: "主模型失败时自动切换的备选模型", en: "Backup when primary fails" },
                 type: "enum",
                 isArray: true,
+                needsApiKey: true,
                 options: [
                     "google/gemini-3-flash-preview",
-                    "openai/gpt-5-mini",
+                    "google/gemini-2.0-flash",
+                    "openai/gpt-4o-mini",
+                    "openai/gpt-4-turbo",
+                    "anthropic/claude-3-5-sonnet",
+                    "deepseek/deepseek-chat",
+                    "ollama/llama3",
                     "自定义"
                 ]
             },
