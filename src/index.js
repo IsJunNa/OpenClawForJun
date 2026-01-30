@@ -20,10 +20,12 @@ const rl = readline.createInterface({
 async function checkUpdate() {
     const lang = engine.getLang();
     try {
-        const latestRaw = execSync('curl -s --connect-timeout 3 https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/package.json').toString();
+        // 使用随机数作为参数强制绕过 GitHub 缓存
+        const latestRaw = execSync(`curl -s --connect-timeout 3 "https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/package.json?v=${Date.now()}"`).toString();
         const latestPkg = JSON.parse(latestRaw);
         
-        if (latestPkg.version !== pkg.version) {
+        // 只有当远程版本号大于本地版本号时才提示更新
+        if (isNewer(latestPkg.version, pkg.version)) {
             console.log(ui.msg('yellow', `\n🔔 检测到新版本: v${latestPkg.version} (当前本地版本: v${pkg.version})`));
             console.log(`  1. 立即更新`);
             console.log(`  2. 暂时忽略`);
@@ -47,6 +49,16 @@ async function checkUpdate() {
     } catch (e) {
         // 忽略网络异常
     }
+}
+
+function isNewer(remote, local) {
+    const r = remote.split('.').map(Number);
+    const l = local.split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+        if (r[i] > l[i]) return true;
+        if (r[i] < l[i]) return false;
+    }
+    return false;
 }
 
 async function ask(question) {
