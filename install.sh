@@ -15,53 +15,81 @@ echo -e "${CYAN}
 ${NC}"
 
 echo -e "${GREEN}==================================================${NC}"
-echo -e "${GREEN}   🦆 OpenClawForJun 一键部署脚本 (v1.0.0)        ${NC}"
-echo -e "${GREEN}   作者: Jun | 此脚本完全免费 | 严禁倒卖          ${NC}"
+echo -e "${GREEN}   🦆 OpenClawForJun 全自动部署脚本 (v1.5.0)      ${NC}"
+echo -e "${GREEN}   作者: Jun | 环境兼容性增强版 | 严禁倒卖        ${NC}"
 echo -e "${GREEN}==================================================${NC}"
 
-# 权限提升提示
+# 权限检测
 if [ "$EUID" -ne 0 ]; then
-  echo -e "${YELLOW}提示: 如果安装过程中遇到权限问题，请尝试使用 sudo 运行此脚本。${NC}"
+  echo -e "${YELLOW}提示: 部分环境安装可能需要输入密码以获取管理员权限...${NC}"
 fi
 
-# 1. 检查 Node.js
-echo -e "\n${YELLOW}[1/4] 🔍 正在检查运行环境...${NC}"
+# 1. 环境依赖全自动安装
+echo -e "\n${YELLOW}[1/4] 🔍 正在检查并配置运行环境...${NC}"
+
+# 检测 OS 类型
+OS_TYPE="unknown"
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    OS_TYPE="linux"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    OS_TYPE="macos"
+fi
+
+install_node() {
+    echo -e "${YELLOW}未检测到 Node.js，准备开始全自动安装...${NC}"
+    if [ "$OS_TYPE" == "macos" ]; then
+        if ! command -v brew &> /dev/null; then
+            echo -e "正在安装 Homebrew..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
+        brew install node
+    elif [ "$OS_TYPE" == "linux" ]; then
+        if command -v apt-get &> /dev/null; then
+            echo -e "检测到 Debian/Ubuntu 环境，正在通过 NodeSource 安装..."
+            curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+        elif command -v yum &> /dev/null; then
+            echo -e "检测到 RHEL/CentOS 环境，正在安装..."
+            curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+            sudo yum install -y nodejs
+        else
+            echo -e "${RED}无法自动识别包管理器，请手动安装 Node.js v22+${NC}"
+            exit 1
+        fi
+    fi
+}
+
 if ! command -v node &> /dev/null; then
-    echo -e "${RED}错误: 未检测到 Node.js。请先安装 Node.js v22 或更高版本。${NC}"
+    install_node
+fi
+
+if ! command -v npm &> /dev/null; then
+    echo -e "${RED}错误: Node.js 已安装但 npm 缺失，请检查环境。${NC}"
     exit 1
 fi
+
 echo -e "   - Node.js 版本: $(node -v) ${GREEN}[OK]${NC}"
+echo -e "   - npm 版本: $(npm -v) ${GREEN}[OK]${NC}"
 
 # 2. 安装 OpenClaw 核心
 echo -e "\n${YELLOW}[2/4] 🚀 正在安装 OpenClaw 核心程序...${NC}"
-npm install -g openclaw
-if [ $? -ne 0 ]; then
-    echo -e "${RED}核心安装失败，请检查网络或尝试: sudo npm install -g openclaw${NC}"
-    exit 1
-fi
+sudo npm install -g openclaw || npm install -g openclaw
 
 # 3. 安装中文管理工具
-echo -e "\n${YELLOW}[3/4] 🛠️ 正在配置中文管理中心 (OpenClawForJun)...${NC}"
+echo -e "\n${YELLOW}[3/4] 🛠️ 正在配置管理中心 (OpenClawForJun)...${NC}"
 INSTALL_DIR="$HOME/OpenClawForJun"
 if [ -d "$INSTALL_DIR" ]; then
-    echo -e "   - 检测到旧版本，正在更新..."
     cd "$INSTALL_DIR" && git pull
 else
-    echo -e "   - 正在拉取代码库..."
     git clone https://github.com/IsJunNa/OpenClawForJun.git "$INSTALL_DIR"
     cd "$INSTALL_DIR"
 fi
 
-npm install -g .
-if [ $? -ne 0 ]; then
-    echo -e "${RED}管理工具链接失败，请尝试: sudo npm install -g .${NC}"
-    exit 1
-fi
+sudo npm install -g . || npm install -g .
 
 # 4. 完成
 echo -e "\n${GREEN}==================================================${NC}"
-echo -e "${GREEN}   🎉 部署圆满成功！${NC}"
+echo -e "${GREEN}   🎉 恭喜！系统已达到「拎包入住」状态！${NC}"
 echo -e "   核心驱动: ${BLUE}https://github.com/openclaw/openclaw${NC}"
-echo -e "   管理工具: ${BLUE}https://github.com/IsJunNa/OpenClawForJun${NC}"
-echo -e "\n   ${YELLOW}现在请输入: ${CYAN}openclaw-jun${NC}${YELLOW} 开启智能之旅！${NC}"
+echo -e "\n   ${YELLOW}现在请输入: ${CYAN}openclaw-jun${NC}${YELLOW} 立即开启管理！${NC}"
 echo -e "${GREEN}==================================================${NC}"
