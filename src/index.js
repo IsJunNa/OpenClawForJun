@@ -3,7 +3,7 @@
 /**
  * OpenClawForJun 核心入口
  * 作者: Jun
- * 基于 OpenClaw 原生项目构建
+ * 基于 OpenClaw (Clawd) 原生项目构建
  */
 
 const readline = require('readline');
@@ -26,38 +26,38 @@ function showHeader() {
     console.log(ui.msg('cyan', ui.banner));
     console.log(ui.msg('green', ui.separator));
     console.log(`   🦆 ${ui.msg('bold', 'OpenClawForJun')} 智能管理中心 `);
-    console.log(`   ${ui.msg('yellow', '作者: Jun | 此工具完全免费 | MIT 协议')} `);
+    console.log(`   ${ui.msg('yellow', '作者: Jun | 版本: 1.0.0 | 本工具完全免费')} `);
     console.log(ui.msg('green', ui.separator));
 }
 
 async function subMenu(category) {
     while (true) {
         showHeader();
-        console.log(`\n${ui.msg('blue', '【' + category.label + '】')}`);
+        console.log(`\n${ui.categoryIcon(category.id)} ${ui.msg('blue', '【' + category.label + '】')}`);
         const config = engine.read();
         
         category.items.forEach((item, index) => {
             const val = engine.get(config, item.key);
             const displayVal = val === undefined ? ui.msg('red', '[未设置]') : ui.msg('green', val);
-            console.log(`${ui.msg('yellow', index + 1)}. ${item.label}: ${displayVal}`);
-            console.log(`   └─ ${item.desc}`);
+            console.log(`  ${ui.msg('yellow', index + 1)}. ${item.label}: ${displayVal}`);
+            console.log(`     ${ui.msg('reset', '└─ ' + item.desc)}`);
         });
         
-        console.log(`\n${ui.msg('cyan', 'b')}. 返回主菜单`);
-        const choice = await ask(`\n请输入编号进行修改: `);
+        console.log(`\n  ${ui.msg('cyan', 'b')}. 返回主菜单`);
+        const choice = await ask(`\n👉 请输入编号进行修改: `);
         
         if (choice.toLowerCase() === 'b') return;
         
         const idx = parseInt(choice) - 1;
         if (category.items[idx]) {
             const item = category.items[idx];
-            console.log(`\n${ui.msg('bold', '正在修改: ' + item.label)}`);
-            console.log(`${ui.msg('yellow', '提示: ' + item.desc)}`);
-            const newVal = await ask(`请输入新值 (直接回车保持不变): `);
+            console.log(`\n📦 ${ui.msg('bold', '正在修改: ' + item.label)}`);
+            console.log(`💡 ${ui.msg('yellow', '说明: ' + item.desc)}`);
+            const newVal = await ask(`✍️ 请输入新值 (直接回车保持不变): `);
             if (newVal.trim() !== '') {
                 engine.set(config, item.key, newVal.trim());
                 engine.write(config);
-                console.log(ui.msg('green', '✅ 保存成功！'));
+                console.log(ui.msg('green', '\n✅ 保存成功！'));
                 await new Promise(r => setTimeout(r, 800));
             }
         }
@@ -66,8 +66,10 @@ async function subMenu(category) {
 
 async function initWizard() {
     console.clear();
-    console.log(ui.msg('yellow', '--- 🚀 OpenClaw 中文初始化向导 ---'));
-    console.log(`由 Jun 倾力打造，引导您完成核心配置。`);
+    console.log(ui.msg('yellow', '=========================================='));
+    console.log(ui.msg('yellow', '   🚀 OpenClaw 中文初始化向导 (By Jun)    '));
+    console.log(ui.msg('yellow', '=========================================='));
+    console.log(`\n奴才将带您完成核心设置，让助手立刻上线。`);
     
     const config = engine.read();
     const essentials = [
@@ -78,44 +80,44 @@ async function initWizard() {
     
     for (const item of essentials) {
         const current = engine.get(config, item.key);
-        const res = await ask(`\n${item.label} (${item.desc})\n[当前: ${current || '空'}] -> 请输入: `);
+        const res = await ask(`\n📍 ${item.label}\n   ${ui.msg('reset', item.desc)}\n   [当前: ${current || '空'}] ->: `);
         if (res.trim() !== '') {
             engine.set(config, item.key, res.trim());
         }
     }
     
     engine.write(config);
-    console.log(`\n${ui.msg('green', '🎉 核心配置已就绪！')}`);
-    await ask('按回车返回主菜单...');
+    console.log(`\n${ui.msg('green', '🎊 核心配置已就绪！去主菜单重启网关即可。')}`);
+    await ask('\n按回车键返回...');
 }
 
 async function main() {
     while (true) {
         showHeader();
-        console.log(`\n本项目基于开源项目 ${ui.msg('blue', 'OpenClaw (原 Clawd)')}。`);
+        console.log(`\n🚀 本工具由作者 ${ui.msg('bold', 'Jun')} 为开源项目 ${ui.msg('blue', 'OpenClaw')} 定制开发。`);
         
         SCHEMA.forEach((cat, index) => {
-            console.log(`${ui.msg('yellow', index + 1)}. ${cat.label}`);
+            console.log(`  ${ui.msg('yellow', index + 1)}. ${ui.categoryIcon(cat.id)} ${cat.label}`);
         });
         
-        console.log(`\n${ui.msg('cyan', '0')}. 🚀 开始「中文初始化向导」`);
-        console.log(`${ui.msg('cyan', 'r')}. 🔄 重启网关 (使新配置生效)`);
-        console.log(`${ui.msg('cyan', 'q')}. 🚪 退出工具`);
+        console.log(`\n  ${ui.msg('cyan', '0')}. 🌟 开始「中文初始化向导」`);
+        console.log(`  ${ui.msg('cyan', 'r')}. 🔄 重启网关 (改完配置必点)`);
+        console.log(`  ${ui.msg('cyan', 'q')}. 🚪 退出管理`);
         
-        const choice = await ask(`\n请选择操作: `);
+        const choice = await ask(`\n👉 请选择操作: `);
         
         if (choice.toLowerCase() === 'q') {
-            console.log('愿 OpenClaw 与您同在。');
+            console.log('\n👋 愿代码无 Bug，OpenClaw 与您同在。');
             process.exit(0);
         }
         
         if (choice.toLowerCase() === 'r') {
-            console.log(ui.msg('yellow', '正在发送重启指令...'));
+            console.log(`\n${ui.msg('yellow', '正在发送重启信号...')}`);
             try { 
                 execSync('openclaw gateway restart'); 
-                console.log('✅ 指令已发送。'); 
+                console.log(ui.msg('green', '✅ 重启指令已送达。')); 
             } catch(e) { 
-                console.log('❌ 重启失败，请手动运行 openclaw gateway restart'); 
+                console.log(ui.msg('red', '❌ 重启失败，请尝试手动运行 openclaw gateway restart')); 
             }
             await new Promise(r => setTimeout(r, 2000));
             continue;

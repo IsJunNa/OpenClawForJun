@@ -20,9 +20,22 @@ module.exports = {
    \\___)  \\___)  \\___)   
     `,
 
-    separator: '==========================================',
+    separator: '==================================================',
     
     msg(color, text) {
         return `${this.colors[color]}${text}${this.colors.reset}`;
+    },
+
+    categoryIcon(id) {
+        const icons = {
+            core: '🧠',
+            telegram: '📡',
+            discord: '🎮',
+            whatsapp: '💬',
+            search: '🔍',
+            security: '🛡️',
+            system: '⚙️'
+        };
+        return icons[id] || '🔹';
     }
 };
