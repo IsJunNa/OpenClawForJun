@@ -20,33 +20,32 @@ const rl = readline.createInterface({
 async function checkUpdate() {
     const lang = engine.getLang();
     try {
-        // 异步获取远程版本，不影响主界面加载速度
         const latestRaw = execSync('curl -s --connect-timeout 3 https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/package.json').toString();
         const latestPkg = JSON.parse(latestRaw);
         
         if (latestPkg.version !== pkg.version) {
-            console.log(ui.msg('yellow', `\n🔔 ${lang === 'zh' ? '检测到新版本' : 'New version detected'}: v${latestPkg.version} (当前: v${pkg.version})`));
-            console.log(`  1. ${lang === 'zh' ? '立即更新 (Update Now)' : 'Update Now'}`);
-            console.log(`  2. ${lang === 'zh' ? '暂时忽略 (Ignore)' : 'Ignore'}`);
+            console.log(ui.msg('yellow', `\n🔔 检测到新版本: v${latestPkg.version} (当前本地版本: v${pkg.version})`));
+            console.log(`  1. 立即更新`);
+            console.log(`  2. 暂时忽略`);
             
             const choice = await ask(`\n👉 ${ui.t('selectIdx')}: `);
             if (choice === '1') {
-                console.log(ui.msg('green', lang === 'zh' ? '\n正在启动自动更新程序...' : '\nStarting auto-update...'));
+                console.log(ui.msg('green', '\n正在启动全自动更新程序...'));
                 const cmd = process.platform === 'win32' 
                     ? `powershell -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.ps1'))"`
                     : `curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash`;
                 
                 try {
                     execSync(cmd, { stdio: 'inherit' });
-                    console.log(ui.msg('green', lang === 'zh' ? '\n✅ 更新完成！请重新运行命令。' : '\n✅ Update complete! Please restart.'));
+                    console.log(ui.msg('green', '\n✅ 更新完成！请重新启动工具。'));
                     process.exit(0);
                 } catch (e) {
-                    console.log(ui.msg('red', '\n❌ ' + (lang === 'zh' ? '更新失败，请手动运行安装脚本。' : 'Update failed, please run installer manually.')));
+                    console.log(ui.msg('red', '\n❌ 更新失败，请尝试手动运行安装脚本。'));
                 }
             }
         }
     } catch (e) {
-        // 忽略网络错误，不打断用户
+        // 忽略网络异常
     }
 }
 
