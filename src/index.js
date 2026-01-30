@@ -224,8 +224,7 @@ async function subMenu(cat) {
             const prompt = new Select({
                 message: '选择',
                 choices: choices.filter(c => c.role !== 'separator'),
-                pointer: '❯',
-                styles: { primary: c => c }
+                pointer: '❯'
             });
 
             let choice;
@@ -294,8 +293,7 @@ async function main() {
             const prompt = new Select({
                 message: ui.t('mainPrompt'),
                 choices: choices.filter(c => c.role !== 'separator'),
-                pointer: '❯',
-                styles: { primary: c => c }
+                pointer: '❯'
             });
             choice = await prompt.run();
         } catch (e) {
