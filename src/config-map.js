@@ -1,266 +1,383 @@
 /**
- * OpenClawForJun 全量配置映射定义
- * 修正版 - 符合 OpenClaw 官方配置规范
+ * OpenClawForJun 完整配置映射
+ * 每个配置项都有详细说明
  */
 
 module.exports = [
-    // ==================== 1. 基础核心设置 ====================
+    // ==================== 基础核心 ====================
     {
         id: "core",
-        label: { zh: "基础核心设置", en: "Core Settings" },
+        label: { zh: "基础核心", en: "Core" },
         items: [
             {
                 key: "agents.defaults.model.primary",
-                label: { zh: "主 AI 模型", en: "Primary AI Model" },
-                desc: { zh: "选择 AI 使用的核心模型", en: "Core model for AI" },
+                label: { zh: "主模型", en: "Primary Model" },
+                desc: { zh: "AI 使用的主要模型，影响回复质量和速度", en: "Main AI model for responses" },
                 type: "enum",
                 options: [
                     "anthropic/claude-sonnet-4-5-20250929",
                     "anthropic/claude-opus-4-5",
                     "openai/gpt-5.2",
-                    "openai/gpt-5-mini",
                     "google/gemini-3-pro-preview",
                     "google/gemini-3-flash-preview",
                     "ollama/llama3",
-                    "自定义 (Manual)"
+                    "自定义"
                 ]
             },
             {
                 key: "agents.defaults.model.fallbacks",
-                label: { zh: "备份 AI 模型", en: "Fallback Models" },
-                desc: { zh: "主模型不可用时切换", en: "Switch when primary fails" },
+                label: { zh: "备用模型", en: "Fallback" },
+                desc: { zh: "主模型失败时自动切换的备选模型", en: "Backup when primary fails" },
                 type: "enum",
                 isArray: true,
                 options: [
                     "google/gemini-3-flash-preview",
                     "openai/gpt-5-mini",
-                    "自定义 (Manual)"
+                    "自定义"
                 ]
             },
             {
                 key: "agents.defaults.thinkingDefault",
-                label: { zh: "思考深度", en: "Thinking Depth" },
+                label: { zh: "思考深度", en: "Thinking" },
+                desc: { zh: "模型思考的深度，高=更准确但慢", en: "Reasoning depth, high=accurate but slow" },
                 type: "enum",
                 options: ["off", "low", "medium", "high"]
             },
             {
                 key: "agents.defaults.userTimezone",
-                label: { zh: "用户时区", en: "Timezone" },
+                label: { zh: "时区", en: "Timezone" },
+                desc: { zh: "用于日期时间的显示和定时任务", en: "For time display and cron jobs" },
                 type: "enum",
                 options: ["Asia/Shanghai", "Asia/Hong_Kong", "America/New_York", "UTC"]
             },
             {
                 key: "agents.defaults.workspace",
                 label: { zh: "工作目录", en: "Workspace" },
+                desc: { zh: "AI 读写文件的根目录，建议 ~/.openclaw/workspace", en: "Root dir for AI file operations" },
                 type: "string"
             },
             {
                 key: "agents.defaults.timeoutSeconds",
-                label: { zh: "超时时间(秒)", en: "Timeout (s)" },
-                type: "string"
-            },
-            {
-                key: "agents.defaults.maxConcurrent",
-                label: { zh: "最大并发数", en: "Max Concurrent" },
+                label: { zh: "超时(秒)", en: "Timeout" },
+                desc: { zh: "单次操作的最大等待时间", en: "Max wait time per operation" },
                 type: "string"
             }
         ]
     },
 
-    // ==================== 2. 通信频道管理 ====================
+    // ==================== 通信频道 ====================
     {
         id: "channels",
-        label: { zh: "通信频道管理", en: "Channels" },
+        label: { zh: "通信频道", en: "Channels" },
         isCategory: true,
         subCategories: [
-            // -- WhatsApp --
             {
                 id: "whatsapp",
                 label: { zh: "WhatsApp", en: "WhatsApp" },
                 specialActions: [
-                    { id: "login", label: { zh: "扫码登录", en: "Scan QR Login" }, command: "openclaw channels login" }
+                    { id: "login", label: { zh: "扫码登录", en: "QR Login" }, command: "openclaw channels login" }
                 ],
                 items: [
-                    { key: "channels.whatsapp.dmPolicy", label: { zh: "DM 策略", en: "DM Policy" }, type: "enum", options: ["open", "allowlist", "deny"] },
-                    { key: "channels.whatsapp.allowFrom", label: { zh: "允许的号码", en: "Allowed Numbers" }, type: "string", isArray: true, desc: { zh: "+8613800138000", en: "+8613800138000" } },
-                    { key: "channels.whatsapp.sendReadReceipts", label: { zh: "发送已读回执", en: "Read Receipts" }, type: "boolean" }
+                    {
+                        key: "channels.whatsapp.dmPolicy",
+                        label: { zh: "私信策略", en: "DM Policy" },
+                        desc: { zh: "open=任何人可私聊, allowlist=仅白名单, deny=禁止", en: "Who can DM you" },
+                        type: "enum",
+                        options: ["open", "allowlist", "deny"]
+                    },
+                    {
+                        key: "channels.whatsapp.allowFrom",
+                        label: { zh: "白名单", en: "Allow List" },
+                        desc: { zh: "允许私聊的手机号，格式 +8613800138000", en: "Allowed phone numbers" },
+                        type: "string",
+                        isArray: true
+                    },
+                    {
+                        key: "channels.whatsapp.sendReadReceipts",
+                        label: { zh: "已读回执", en: "Read Receipts" },
+                        desc: { zh: "是否发送已读状态给对方", en: "Send read status" },
+                        type: "boolean"
+                    }
                 ]
             },
-            // -- Telegram --
             {
                 id: "tg",
                 label: { zh: "Telegram", en: "Telegram" },
                 items: [
-                    { key: "channels.telegram.botToken", label: { zh: "Bot Token", en: "Bot Token" }, type: "string", desc: { zh: "从 @BotFather 获取", en: "Get from @BotFather" } },
-                    { key: "channels.telegram.dmPolicy", label: { zh: "DM 策略", en: "DM Policy" }, type: "enum", options: ["open", "allowlist", "deny"] },
-                    { key: "channels.telegram.allowFrom", label: { zh: "允许的用户 ID", en: "Allowed IDs" }, type: "string", isArray: true }
+                    {
+                        key: "channels.telegram.botToken",
+                        label: { zh: "Bot Token", en: "Bot Token" },
+                        desc: { zh: "从 @BotFather 创建机器人后获取的令牌", en: "Token from @BotFather" },
+                        type: "string"
+                    },
+                    {
+                        key: "channels.telegram.dmPolicy",
+                        label: { zh: "私信策略", en: "DM Policy" },
+                        desc: { zh: "谁可以和机器人私聊", en: "Who can DM the bot" },
+                        type: "enum",
+                        options: ["open", "allowlist", "deny"]
+                    },
+                    {
+                        key: "channels.telegram.allowFrom",
+                        label: { zh: "白名单", en: "Allow List" },
+                        desc: { zh: "允许的 Telegram 用户 ID 数字", en: "Allowed user IDs" },
+                        type: "string",
+                        isArray: true
+                    }
                 ]
             },
-            // -- Discord --
             {
                 id: "discord",
                 label: { zh: "Discord", en: "Discord" },
                 items: [
-                    { key: "channels.discord.botToken", label: { zh: "Bot Token", en: "Bot Token" }, type: "string" },
-                    { key: "channels.discord.guildIds", label: { zh: "服务器 ID", en: "Guild IDs" }, type: "string", isArray: true },
-                    { key: "channels.discord.dmPolicy", label: { zh: "DM 策略", en: "DM Policy" }, type: "enum", options: ["open", "allowlist", "deny"] }
+                    {
+                        key: "channels.discord.botToken",
+                        label: { zh: "Bot Token", en: "Bot Token" },
+                        desc: { zh: "Discord 开发者门户 > 应用 > Bot 页面获取", en: "From Discord Developer Portal" },
+                        type: "string"
+                    },
+                    {
+                        key: "channels.discord.guildIds",
+                        label: { zh: "服务器 ID", en: "Guild IDs" },
+                        desc: { zh: "机器人允许运行的服务器，右键服务器复制 ID", en: "Servers where bot runs" },
+                        type: "string",
+                        isArray: true
+                    }
                 ]
             },
-            // -- Slack --
             {
                 id: "slack",
                 label: { zh: "Slack", en: "Slack" },
                 items: [
-                    { key: "channels.slack.appToken", label: { zh: "App Token", en: "App Token" }, type: "string" },
-                    { key: "channels.slack.botToken", label: { zh: "Bot Token", en: "Bot Token" }, type: "string" }
+                    {
+                        key: "channels.slack.appToken",
+                        label: { zh: "App Token", en: "App Token" },
+                        desc: { zh: "xapp- 开头的应用级令牌", en: "xapp- prefixed token" },
+                        type: "string"
+                    },
+                    {
+                        key: "channels.slack.botToken",
+                        label: { zh: "Bot Token", en: "Bot Token" },
+                        desc: { zh: "xoxb- 开头的机器人令牌", en: "xoxb- prefixed token" },
+                        type: "string"
+                    }
                 ]
             },
-            // -- Signal --
             {
                 id: "signal",
                 label: { zh: "Signal", en: "Signal" },
                 items: [
-                    { key: "channels.signal.phoneNumber", label: { zh: "绑定手机号", en: "Phone Number" }, type: "string" },
-                    { key: "channels.signal.dmPolicy", label: { zh: "DM 策略", en: "DM Policy" }, type: "enum", options: ["open", "allowlist", "deny"] }
+                    {
+                        key: "channels.signal.phoneNumber",
+                        label: { zh: "手机号", en: "Phone" },
+                        desc: { zh: "Signal 账号绑定的手机号", en: "Signal account phone" },
+                        type: "string"
+                    }
                 ]
             },
-            // -- Mattermost --
             {
                 id: "mattermost",
                 label: { zh: "Mattermost", en: "Mattermost" },
                 items: [
-                    { key: "channels.mattermost.serverUrl", label: { zh: "服务器地址", en: "Server URL" }, type: "string" },
-                    { key: "channels.mattermost.botToken", label: { zh: "Bot Token", en: "Bot Token" }, type: "string" }
+                    {
+                        key: "channels.mattermost.serverUrl",
+                        label: { zh: "服务器", en: "Server" },
+                        desc: { zh: "Mattermost 服务器地址，如 https://mm.company.com", en: "Mattermost server URL" },
+                        type: "string"
+                    },
+                    {
+                        key: "channels.mattermost.botToken",
+                        label: { zh: "Bot Token", en: "Bot Token" },
+                        desc: { zh: "在集成管理中创建的机器人令牌", en: "Bot token from integrations" },
+                        type: "string"
+                    }
                 ]
             },
-            // -- iMessage --
             {
                 id: "imessage",
-                label: { zh: "iMessage (macOS)", en: "iMessage" },
+                label: { zh: "iMessage", en: "iMessage" },
                 items: [
-                    { key: "channels.imessage.dmPolicy", label: { zh: "DM 策略", en: "DM Policy" }, type: "enum", options: ["open", "allowlist", "deny"] },
-                    { key: "channels.imessage.allowFrom", label: { zh: "允许的联系人", en: "Allowed Contacts" }, type: "string", isArray: true, desc: { zh: "dmPolicy=open 时填 *", en: "* for open policy" } }
+                    {
+                        key: "channels.imessage.dmPolicy",
+                        label: { zh: "私信策略", en: "DM Policy" },
+                        desc: { zh: "仅 macOS 有效，需要授权消息读取权限", en: "macOS only, needs permission" },
+                        type: "enum",
+                        options: ["open", "allowlist", "deny"]
+                    },
+                    {
+                        key: "channels.imessage.allowFrom",
+                        label: { zh: "白名单", en: "Allow List" },
+                        desc: { zh: "policy=open 时填 * 表示所有人", en: "Use * for everyone when open" },
+                        type: "string",
+                        isArray: true
+                    }
                 ]
             }
         ]
     },
 
-    // ==================== 3. 会话管理 ====================
+    // ==================== 会话管理 ====================
     {
         id: "sessions",
         label: { zh: "会话管理", en: "Sessions" },
         items: [
             {
                 key: "session.dmScope",
-                label: { zh: "DM 会话隔离", en: "DM Scope" },
+                label: { zh: "隔离模式", en: "Scope" },
+                desc: { zh: "main=共享会话, per-peer=每人独立会话", en: "main=shared, per-peer=isolated" },
                 type: "enum",
                 options: ["main", "per-peer", "per-channel-peer"]
             },
             {
-                key: "session.mainKey",
-                label: { zh: "主会话标识", en: "Main Key" },
-                type: "string",
-                desc: { zh: "默认 main", en: "Default: main" }
-            },
-            {
                 key: "session.reset.mode",
-                label: { zh: "重置模式", en: "Reset Mode" },
+                label: { zh: "重置方式", en: "Reset" },
+                desc: { zh: "daily=每天重置, idle=空闲后重置", en: "daily or idle reset" },
                 type: "enum",
                 options: ["daily", "idle"]
             },
             {
                 key: "session.reset.idleMinutes",
-                label: { zh: "空闲重置(分钟)", en: "Idle Minutes" },
+                label: { zh: "空闲分钟", en: "Idle Min" },
+                desc: { zh: "多少分钟不活动后重置会话", en: "Minutes before reset" },
                 type: "string"
             }
         ]
     },
 
-    // ==================== 4. 浏览器控制 ====================
+    // ==================== 浏览器 ====================
     {
         id: "browser",
         label: { zh: "浏览器控制", en: "Browser" },
         items: [
-            { key: "browser.enabled", label: { zh: "启用浏览器", en: "Enable" }, type: "boolean" },
-            { key: "browser.headless", label: { zh: "无头模式", en: "Headless" }, type: "boolean" },
-            { key: "browser.defaultProfile", label: { zh: "默认配置", en: "Profile" }, type: "string" }
+            {
+                key: "browser.enabled",
+                label: { zh: "启用", en: "Enable" },
+                desc: { zh: "允许 AI 控制浏览器进行网页操作", en: "Allow AI to control browser" },
+                type: "boolean"
+            },
+            {
+                key: "browser.headless",
+                label: { zh: "无头模式", en: "Headless" },
+                desc: { zh: "开启=后台运行不显示窗口", en: "Run without visible window" },
+                type: "boolean"
+            }
         ]
     },
 
-    // ==================== 5. 技能扩展 ====================
-    {
-        id: "skills",
-        label: { zh: "技能扩展", en: "Skills" },
-        items: [
-            { key: "skills.install.preferBrew", label: { zh: "优先 Brew", en: "Prefer Brew" }, type: "boolean" },
-            { key: "skills.install.nodeManager", label: { zh: "包管理器", en: "Node Manager" }, type: "enum", options: ["npm", "pnpm", "yarn"] }
-        ]
-    },
-
-    // ==================== 6. 定时任务 ====================
+    // ==================== 定时任务 ====================
     {
         id: "cron",
-        label: { zh: "定时任务", en: "Cron Jobs" },
+        label: { zh: "定时任务", en: "Cron" },
         items: [
-            { key: "cron.enabled", label: { zh: "启用", en: "Enable" }, type: "boolean" },
-            { key: "cron.maxConcurrentRuns", label: { zh: "最大并发", en: "Max Runs" }, type: "string" }
+            {
+                key: "cron.enabled",
+                label: { zh: "启用", en: "Enable" },
+                desc: { zh: "允许配置定时自动执行的任务", en: "Enable scheduled tasks" },
+                type: "boolean"
+            },
+            {
+                key: "cron.maxConcurrentRuns",
+                label: { zh: "并发数", en: "Concurrent" },
+                desc: { zh: "同时运行的最大任务数", en: "Max parallel tasks" },
+                type: "string"
+            }
         ]
     },
 
-    // ==================== 7. 网关配置 ====================
+    // ==================== 网关 ====================
     {
         id: "gateway",
-        label: { zh: "网关配置", en: "Gateway" },
+        label: { zh: "网关服务", en: "Gateway" },
         specialActions: [
-            { id: "start", label: { zh: "启动网关", en: "Start" }, command: "openclaw gateway start" },
-            { id: "stop", label: { zh: "停止网关", en: "Stop" }, command: "openclaw gateway stop" },
-            { id: "status", label: { zh: "查看状态", en: "Status" }, command: "openclaw status" },
-            { id: "logs", label: { zh: "查看日志", en: "Logs" }, command: "openclaw logs -n 30" }
+            { id: "start", label: { zh: "启动", en: "Start" }, command: "openclaw gateway start" },
+            { id: "stop", label: { zh: "停止", en: "Stop" }, command: "openclaw gateway stop" },
+            { id: "status", label: { zh: "状态", en: "Status" }, command: "openclaw status" },
+            { id: "logs", label: { zh: "日志", en: "Logs" }, command: "openclaw logs -n 30" }
         ],
         items: [
-            { key: "gateway.port", label: { zh: "端口", en: "Port" }, type: "string", desc: { zh: "默认 18789", en: "Default 18789" } },
-            { key: "gateway.bind", label: { zh: "绑定模式", en: "Bind" }, type: "enum", options: ["loopback", "tailnet", "lan"] },
-            { key: "gateway.token", label: { zh: "认证 Token", en: "Token" }, type: "string" }
+            {
+                key: "gateway.port",
+                label: { zh: "端口", en: "Port" },
+                desc: { zh: "网关监听端口，默认 18789", en: "Default 18789" },
+                type: "string"
+            },
+            {
+                key: "gateway.bind",
+                label: { zh: "绑定", en: "Bind" },
+                desc: { zh: "loopback=仅本机, lan=局域网, tailnet=VPN", en: "Network binding mode" },
+                type: "enum",
+                options: ["loopback", "tailnet", "lan"]
+            },
+            {
+                key: "gateway.token",
+                label: { zh: "认证令牌", en: "Token" },
+                desc: { zh: "非 loopback 模式必须设置认证令牌", en: "Required for non-loopback" },
+                type: "string"
+            }
         ]
     },
 
-    // ==================== 8. 安全配置 ====================
+    // ==================== 安全 ====================
     {
         id: "security",
-        label: { zh: "安全配置", en: "Security" },
+        label: { zh: "安全控制", en: "Security" },
         items: [
             {
                 key: "agents.defaults.sandbox.mode",
-                label: { zh: "沙箱模式", en: "Sandbox" },
+                label: { zh: "沙箱", en: "Sandbox" },
+                desc: { zh: "off=无限制, non-main=限制非主会话, all=全部限制", en: "Restriction level" },
                 type: "enum",
                 options: ["off", "non-main", "all"]
             },
             {
                 key: "tools.exec.security",
-                label: { zh: "执行安全", en: "Exec Security" },
+                label: { zh: "命令执行", en: "Exec" },
+                desc: { zh: "deny=禁止, allowlist=白名单, full=完全允许(危险)", en: "Shell command policy" },
                 type: "enum",
                 options: ["deny", "allowlist", "full"]
             }
         ]
     },
 
-    // ==================== 9. 消息配置 ====================
+    // ==================== 消息 ====================
     {
         id: "messages",
-        label: { zh: "消息配置", en: "Messages" },
+        label: { zh: "消息规则", en: "Messages" },
         items: [
-            { key: "messages.groupChat.requireMention", label: { zh: "群聊必须@", en: "Require Mention" }, type: "boolean" },
-            { key: "messages.groupChat.mentionPatterns", label: { zh: "提及模式", en: "Patterns" }, type: "string", isArray: true }
+            {
+                key: "messages.groupChat.requireMention",
+                label: { zh: "群聊@", en: "Mention" },
+                desc: { zh: "群聊中必须@机器人才响应", en: "Require @ in groups" },
+                type: "boolean"
+            },
+            {
+                key: "messages.groupChat.mentionPatterns",
+                label: { zh: "@模式", en: "Patterns" },
+                desc: { zh: "触发机器人的关键词，如 @claw", en: "Keywords to trigger, e.g. @claw" },
+                type: "string",
+                isArray: true
+            }
         ]
     },
 
-    // ==================== 10. 日志配置 ====================
+    // ==================== 日志 ====================
     {
         id: "logging",
-        label: { zh: "日志配置", en: "Logging" },
+        label: { zh: "日志", en: "Logging" },
         items: [
-            { key: "logging.level", label: { zh: "日志级别", en: "Level" }, type: "enum", options: ["error", "warn", "info", "debug"] },
-            { key: "logging.redactSecrets", label: { zh: "隐藏敏感信息", en: "Redact" }, type: "boolean" }
+            {
+                key: "logging.level",
+                label: { zh: "级别", en: "Level" },
+                desc: { zh: "error=仅错误, info=正常, debug=详细调试", en: "Verbosity level" },
+                type: "enum",
+                options: ["error", "warn", "info", "debug"]
+            },
+            {
+                key: "logging.redactSecrets",
+                label: { zh: "隐藏敏感", en: "Redact" },
+                desc: { zh: "日志中自动隐藏密钥等敏感信息", en: "Hide secrets in logs" },
+                type: "boolean"
+            }
         ]
     }
 ];
