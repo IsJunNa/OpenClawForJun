@@ -1,5 +1,6 @@
 /**
  * OpenClawForJun UI 样式与翻译
+ * 2026-01-30 Final Polish
  */
 
 const colors = {
@@ -18,9 +19,6 @@ const i18n = {
     zh: {
         title: "OpenClaw 智能管理中心",
         author: "作者: Jun",
-        subtitle: "极简 · 专业 · 免费",
-        license: "协议",
-        free: "本工具完全免费",
         mainPrompt: "请选择分类编号或操作指令",
         back: "返回主菜单",
         editPrompt: "请输入编号进行修改",
@@ -40,10 +38,6 @@ const i18n = {
     en: {
         title: "OpenClaw Management Center",
         author: "Author: Jun",
-        subtitle: "Minimal · Pro · Free",
-        author: "Author",
-        license: "License",
-        free: "Fully Free Tool",
         mainPrompt: "Choose a category or command",
         back: "Back to Main Menu",
         editPrompt: "Enter number to edit",
@@ -71,24 +65,49 @@ module.exports = {
     
     getBanner() {
         const text = i18n[currentLang];
+        const duck = `
+      ${colors.yellow}  ,,            ,,     ,,     ,,${colors.reset}
+      ${colors.yellow} (  ' )>       (  )>  (  )>  (  )>${colors.reset}
+      ${colors.yellow}< (  /   ~~~~  ( /    ( /    ( /${colors.reset}
+      ${colors.yellow} \`---'         \`-'    \`-'    \`-'${colors.reset}
+${colors.blue}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~${colors.reset}`;
+
+        const boxTop    = colors.cyan + '┌──────────────────────────────────────────────────┐' + colors.reset;
+        const boxEmpty  = colors.cyan + '│                                                  │' + colors.reset;
+        const boxBottom = colors.cyan + '└──────────────────────────────────────────────────┘' + colors.reset;
+
+        // 拼接头部
         return `
-    ${colors.cyan}┌──────────────────────────────────────────────────┐${colors.reset}
-    ${colors.cyan}│${colors.reset}                                                  ${colors.cyan}│${colors.reset}
-    ${colors.cyan}│${colors.reset}                ${colors.yellow}      __${colors.reset}                        ${colors.cyan}│${colors.reset}
-    ${colors.cyan}│${colors.reset}                ${colors.yellow}    <(o )___${colors.reset}                    ${colors.cyan}│${colors.reset}
-    ${colors.cyan}│${colors.reset}                ${colors.yellow}     ( ._> /${colors.reset}                    ${colors.cyan}│${colors.reset}
-    ${colors.cyan}│${colors.reset}                ${colors.yellow}      \`---' ${colors.reset}                    ${colors.cyan}│${colors.reset}
-    ${colors.cyan}│${colors.reset}                                                  ${colors.cyan}│${colors.reset}
-    ${colors.cyan}│${colors.reset}           ${colors.bold}${this.centerText(text.title, 39)}${colors.reset} ${colors.cyan}│${colors.reset}
-    ${colors.cyan}│${colors.reset}           ${colors.gray}${this.centerText(text.author, 39)}${colors.reset} ${colors.cyan}│${colors.reset}
-    ${colors.cyan}└──────────────────────────────────────────────────┘${colors.reset}
+${boxTop}
+${boxEmpty}
+${this.wrapInBox(duck.split('\n')[1])}
+${this.wrapInBox(duck.split('\n')[2])}
+${this.wrapInBox(duck.split('\n')[3])}
+${this.wrapInBox(duck.split('\n')[4])}
+${this.wrapInBox(duck.split('\n')[5])}
+${boxEmpty}
+${this.wrapInBox(colors.bold + this.centerText(text.title, 48) + colors.reset)}
+${this.wrapInBox(colors.gray + this.centerText(text.author, 48) + colors.reset)}
+${boxBottom}
     `;
+    },
+
+    // 辅助函数：将一行内容包在边框内并确保对齐
+    wrapInBox(content) {
+        // 剥离 ANSI 颜色代码计算真实长度
+        const cleanContent = content.replace(/\x1b\[[0-9;]*m/g, '');
+        // 处理 CJK 字符宽度
+        const visualLen = cleanContent.replace(/[\u4e00-\u9fa5]/g, 'aa').length;
+        const padding = 50 - visualLen;
+        const leftPad = Math.floor(padding / 2);
+        const rightPad = padding - leftPad;
+        return colors.cyan + '│' + colors.reset + ' '.repeat(leftPad) + content + ' '.repeat(rightPad) + colors.cyan + '│' + colors.reset;
     },
 
     centerText(text, width) {
         const len = text.replace(/[\u4e00-\u9fa5]/g, 'aa').length;
         const pad = Math.max(0, Math.floor((width - len) / 2));
-        return ' '.repeat(pad) + text + ' '.repeat(width - len - pad);
+        return ' '.repeat(pad) + text + ' '.repeat(Math.max(0, width - len - pad));
     },
 
     separator: '──────────────────────────────────────────────────',
