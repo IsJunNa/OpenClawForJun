@@ -28,18 +28,36 @@
 
 ## 🚀 Quick Start
 
-Run the following command in your terminal (macOS / Linux):
+### macOS / Linux
 
+Run the following command:
 ```bash
 curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash
 ```
 
-### Usage
+### Windows (PowerShell)
 
-After installation, start the manager by typing:
-```bash
-openclaw-jun
+Open PowerShell as Administrator and run:
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.ps1'))
 ```
+
+---
+
+## 🛠️ Usage
+
+After installation, simply type `openclaw-jun` in your terminal to start the manager.
+
+---
+
+## 🔍 Troubleshooting (常见错误排查)
+
+| Error (错误信息) | Solution (对策) |
+| :--- | :--- |
+| `command not found: node` | Ensure Node.js v22+ is installed and in your PATH. |
+| `Permission denied` | Run the installation with `sudo` (Linux/macOS) or as Admin (Windows). |
+| `Restart Failed` | Ensure OpenClaw Gateway is actually running (`openclaw gateway start`). |
+| `Invalid Token` | Double-check your API/Bot Token for typos or extra spaces. |
 
 ---
 

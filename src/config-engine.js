@@ -4,9 +4,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
-const CONFIG_PATH = path.join(process.env.HOME, '.openclaw', 'openclaw.json');
-const LANG_PATH = path.join(process.env.HOME, '.openclaw', '.ocfj_lang');
+const HOME = os.homedir();
+const CONFIG_PATH = path.join(HOME, '.openclaw', 'openclaw.json');
+const LANG_PATH = path.join(HOME, '.openclaw', '.ocfj_lang');
 
 module.exports = {
     read() {

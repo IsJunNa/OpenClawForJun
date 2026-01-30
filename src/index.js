@@ -113,9 +113,19 @@ async function main() {
         }
         if (choice.toLowerCase() === 'r') {
             console.log(`\n${ui.msg('yellow', ui.t('restarting'))}`);
-            try { execSync('openclaw gateway restart'); console.log(ui.msg('green', ui.t('restartOk'))); } 
-            catch(e) { console.log(ui.msg('red', 'ERROR')); }
-            await new Promise(r => setTimeout(r, 1500));
+            try { 
+                execSync('openclaw gateway restart'); 
+                console.log(ui.msg('green', ui.t('restartOk'))); 
+            } catch(e) { 
+                console.log(ui.msg('red', '\n❌ ' + (lang === 'zh' ? '重启失败' : 'Restart Failed')));
+                console.log(ui.msg('gray', '------------------------------------------'));
+                console.log(ui.msg('yellow', lang === 'zh' ? '常见原因及对策：' : 'Common Issues & Solutions:'));
+                console.log(lang === 'zh' ? '1. OpenClaw 未运行：请先在终端运行 openclaw gateway start' : '1. OpenClaw not running: Run "openclaw gateway start" first');
+                console.log(lang === 'zh' ? '2. 权限不足：请尝试以管理员身份/sudo运行' : '2. Permissions: Try running as Administrator/sudo');
+                console.log(lang === 'zh' ? '3. 路径错误：确保 openclaw 已在全局变量中' : '3. Path Error: Ensure "openclaw" is in your PATH');
+                console.log(ui.msg('gray', '------------------------------------------'));
+            }
+            await new Promise(r => setTimeout(r, 3000));
             continue;
         }
         
