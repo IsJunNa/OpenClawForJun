@@ -72,8 +72,13 @@ echo -e "   - Node.js 版本: $(node -v) ${GREEN}[OK]${NC}"
 echo -e "   - npm 版本: $(npm -v) ${GREEN}[OK]${NC}"
 
 # 2. 安装 OpenClaw 核心
-echo -e "\n${YELLOW}[2/4] 🚀 正在安装 OpenClaw 核心程序...${NC}"
-sudo npm install -g openclaw || npm install -g openclaw
+echo -e "\n${YELLOW}[2/4] 🚀 正在检查并配置 OpenClaw 核心程序...${NC}"
+if ! command -v openclaw &> /dev/null; then
+    echo -e "   - 未检测到 OpenClaw，正在安装..."
+    sudo npm install -g openclaw || npm install -g openclaw
+else
+    echo -e "   - 检测到 OpenClaw 已安装: $(openclaw --version) ${GREEN}[跳过]${NC}"
+fi
 
 # 3. 安装中文管理工具
 echo -e "\n${YELLOW}[3/4] 🛠️ 正在配置管理中心 (OpenClawForJun)...${NC}"

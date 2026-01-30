@@ -35,8 +35,14 @@ if (!(Get-Command node -ErrorAction SilentlyContinue)) {
 Write-Host "   - Node.js 版本: $(node -v) [OK]" -ForegroundColor Green
 
 # 2. 安装 OpenClaw 核心
-Write-Host "`n[2/4] 🚀 正在安装 OpenClaw 核心..." -ForegroundColor Yellow
-npm install -g openclaw
+Write-Host "`n[2/4] 🚀 正在检查并配置 OpenClaw 核心..." -ForegroundColor Yellow
+if (!(Get-Command openclaw -ErrorAction SilentlyContinue)) {
+    Write-Host "   - 未检测到 OpenClaw，正在安装..."
+    npm install -g openclaw
+} else {
+    $version = openclaw --version
+    Write-Host "   - 检测到 OpenClaw 已安装: $version [跳过]" -ForegroundColor Green
+}
 
 # 3. 配置管理工具
 Write-Host "`n[3/4] 🛠️ 正在部署 OpenClawForJun..." -ForegroundColor Yellow
