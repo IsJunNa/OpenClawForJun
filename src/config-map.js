@@ -1,17 +1,17 @@
 /**
- * OpenClawForJun 全量配置映射定义
- * 作者: Jun
+ * OpenClawForJun 配置映射定义
+ * 包含中英文双语支持
  */
 
 module.exports = [
     {
         id: "general",
-        label: "基础核心设置",
+        label: { zh: "基础核心设置", en: "General Settings" },
         items: [
             { 
                 key: "agents.defaults.model.primary", 
-                label: "主 AI 模型", 
-                desc: "选择 AI 回复使用的核心模型", 
+                label: { zh: "主 AI 模型", en: "Primary AI Model" }, 
+                desc: { zh: "选择 AI 使用的核心模型", en: "Core model for AI responses" }, 
                 type: "enum",
                 options: [
                     "google-gemini-cli/gemini-3-flash-preview",
@@ -22,56 +22,50 @@ module.exports = [
                     "anthropic/claude-3-5-haiku-latest",
                     "ollama/llama3",
                     "ollama/qwen2.5",
-                    "自定义输入"
+                    "自定义/Manual Input"
                 ]
             },
-            { key: "agents.defaults.thinkingDefault", label: "思考深度", desc: "模型处理问题的深度级别", type: "enum", options: ["off", "low", "medium", "high", "xhigh"] },
-            { key: "agents.defaults.verboseDefault", label: "详细模式", desc: "是否展示工具调用的中间过程", type: "enum", options: ["on", "off", "full"] },
-            { key: "agents.defaults.userTimezone", label: "用户时区", desc: "如 Asia/Shanghai", type: "string" },
-            { key: "agents.defaults.timeFormat", label: "时间格式", desc: "12 或 24 小时制", type: "enum", options: ["12", "24", "auto"] }
+            { 
+                key: "agents.defaults.thinkingDefault", 
+                label: { zh: "思考深度", en: "Thinking Depth" }, 
+                desc: { zh: "模型处理问题的深度级别", en: "Thinking level for the agent" }, 
+                type: "enum", 
+                options: ["off", "low", "medium", "high", "xhigh"] 
+            },
+            { 
+                key: "agents.defaults.verboseDefault", 
+                label: { zh: "详细模式", en: "Verbose Mode" }, 
+                desc: { zh: "是否展示工具调用的中间过程", en: "Show tool invocation details" }, 
+                type: "enum", 
+                options: ["on", "off", "full"] 
+            },
+            { 
+                key: "agents.defaults.userTimezone", 
+                label: { zh: "用户时区", en: "User Timezone" }, 
+                desc: { zh: "如 Asia/Shanghai", en: "e.g., Asia/Shanghai" }, 
+                type: "string" 
+            }
         ]
     },
     {
         id: "channels",
-        label: "通信频道管理",
+        label: { zh: "通信频道管理", en: "Messaging Channels" },
         items: [
-            { key: "channels.telegram.enabled", label: "Telegram - 状态", desc: "是否启用机器人频道", type: "boolean" },
-            { key: "channels.telegram.botToken", label: "Telegram - 令牌", desc: "从 @BotFather 获取的 Token", type: "string" },
-            { key: "channels.telegram.dmPolicy", label: "Telegram - 私聊策略", desc: "配对或公开访问策略", type: "enum", options: ["pairing", "allowlist", "open"] },
-            { key: "channels.discord.enabled", label: "Discord - 状态", desc: "是否启用 Discord 接入", type: "boolean" },
-            { key: "channels.discord.token", label: "Discord - 令牌", desc: "来自开发者平台的 Token", type: "string" },
-            { key: "channels.whatsapp.enabled", label: "WhatsApp - 状态", desc: "是否启用 WhatsApp 接入", type: "boolean" },
-            { key: "channels.slack.enabled", label: "Slack - 状态", desc: "是否启用 Slack 接入", type: "boolean" }
-        ]
-    },
-    {
-        id: "tools",
-        label: "工具与扩展权限",
-        items: [
-            { key: "tools.web.search.enabled", label: "网页搜索", desc: "允许 AI 联网检索实时信息", type: "boolean" },
-            { key: "tools.web.search.provider", label: "搜索提供商", desc: "选择搜索服务商", type: "enum", options: ["brave", "perplexity"] },
-            { key: "tools.web.search.apiKey", label: "搜索 API Key", desc: "对应服务商的 API 密钥", type: "string" },
-            { key: "tools.web.fetch.enabled", label: "网页抓取", desc: "允许 AI 解析网页链接内容", type: "boolean" },
-            { key: "tools.media.image.enabled", label: "视觉理解", desc: "开启 AI 分析图像的能力", type: "boolean" }
+            { key: "channels.telegram.enabled", label: { zh: "Telegram - 状态", en: "Telegram - Enabled" }, desc: { zh: "启用机器人频道", en: "Enable TG Bot" }, type: "boolean" },
+            { key: "channels.telegram.botToken", label: { zh: "Telegram - 令牌", en: "Telegram - Token" }, desc: { zh: "Bot Token", en: "Bot Token" }, type: "string" },
+            { key: "channels.telegram.dmPolicy", label: { zh: "Telegram - 私聊策略", en: "Telegram - DM Policy" }, desc: { zh: "访问控制模式", en: "Access control policy" }, type: "enum", options: ["pairing", "allowlist", "open"] },
+            { key: "channels.discord.enabled", label: { zh: "Discord - 状态", en: "Discord - Enabled" }, desc: { zh: "启用 Discord 接入", en: "Enable Discord Bot" }, type: "boolean" },
+            { key: "channels.discord.token", label: { zh: "Discord - 令牌", en: "Discord - Token" }, desc: { zh: "Bot Token", en: "Bot Token" }, type: "string" },
+            { key: "channels.whatsapp.enabled", label: { zh: "WhatsApp - 状态", en: "WhatsApp - Enabled" }, desc: { zh: "启用 WhatsApp 接入", en: "Enable WhatsApp" }, type: "boolean" }
         ]
     },
     {
         id: "security",
-        label: "系统安全策略",
+        label: { zh: "系统安全策略", en: "Security & Permissions" },
         items: [
-            { key: "commands.bash", label: "终端执行 (!)", desc: "是否允许 AI 在宿主机执行命令", type: "boolean" },
-            { key: "commands.config", label: "动态配置 (/config)", desc: "允许在对话中实时修改配置", type: "boolean" },
-            { key: "commands.restart", label: "远程重启", desc: "允许通过对话重启网关服务", type: "boolean" },
-            { key: "tools.exec.security", label: "执行安全等级", desc: "deny/allowlist/full", type: "enum", options: ["deny", "allowlist", "full"] }
-        ]
-    },
-    {
-        id: "system",
-        label: "网关底层设置",
-        items: [
-            { key: "gateway.port", label: "运行端口", desc: "默认 18789", type: "number" },
-            { key: "gateway.bind", label: "绑定地址", desc: "loopback/lan/auto", type: "enum", options: ["loopback", "lan", "auto"] },
-            { key: "logging.level", label: "日志详细度", desc: "error/info/debug/trace", type: "enum", options: ["error", "warn", "info", "debug", "trace"] }
+            { key: "commands.bash", label: { zh: "终端执行 (!)", en: "Bash Command (!)" }, desc: { zh: "允许执行 Shell 命令", en: "Allow Shell command execution" }, type: "boolean" },
+            { key: "commands.config", label: { zh: "动态配置 (/config)", en: "Dynamic Config (/config)" }, desc: { zh: "允许在对话中修改配置", en: "Allow editing config via chat" }, type: "boolean" },
+            { key: "tools.exec.security", label: { zh: "执行安全等级", en: "Execution Security" }, desc: { zh: "deny/allowlist/full", en: "Execution security level" }, type: "enum", options: ["deny", "allowlist", "full"] }
         ]
     }
 ];

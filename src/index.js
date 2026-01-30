@@ -3,8 +3,6 @@
 /**
  * OpenClawForJun 核心程序
  * 作者: Jun
- * 基于开源项目 OpenClaw (https://github.com/openclaw/openclaw)
- * 本工具遵循 MIT 协议，完全免费。
  */
 
 const readline = require('readline');
@@ -24,62 +22,62 @@ async function ask(question) {
 
 function showHeader() {
     console.clear();
+    ui.setLang(engine.getLang());
     console.log(ui.msg('blue', ui.banner));
-    console.log(`   ${ui.msg('gray', 'Author: Jun | License: MIT | Fully Free & Professional')}`);
+    console.log(`   ${ui.msg('gray', `${ui.t('author')}: Jun | ${ui.t('license')}: MIT | ${ui.t('free')}`)}`);
     console.log(ui.msg('gray', ui.separator));
 }
 
 async function handleEdit(config, item) {
-    console.log(`\n${ui.msg('bold', '正在修改: ' + item.label)}`);
-    console.log(`${ui.msg('gray', '说明: ' + item.desc)}`);
+    const lang = engine.getLang();
+    console.log(`\n${ui.msg('bold', ui.t('current') + ': ' + item.label[lang])}`);
     
     let newValue = '';
     
     if (item.type === 'boolean') {
-        console.log(`\n  1. 开启 (true)`);
-        console.log(`  2. 关闭 (false)`);
-        const choice = await ask('\n请选择序号: ');
+        console.log(`\n  1. ${lang === 'zh' ? '开启 (true)' : 'ON (true)'}`);
+        console.log(`  2. ${lang === 'zh' ? '关闭 (false)' : 'OFF (false)'}`);
+        const choice = await ask(`\n${ui.t('selectIdx')}: `);
         if (choice === '1') newValue = 'true';
         else if (choice === '2') newValue = 'false';
     } else if (item.type === 'enum') {
         item.options.forEach((opt, i) => {
             console.log(`  ${i + 1}. ${opt}`);
         });
-        const choice = await ask(`\n请选择序号 (1-${item.options.length}): `);
+        const choice = await ask(`\n${ui.t('selectIdx')} (1-${item.options.length}): `);
         const idx = parseInt(choice) - 1;
         if (item.options[idx]) {
-            if (item.options[idx] === '自定义输入') {
-                newValue = await ask(`\n请输入自定义内容: `);
-            } else {
-                newValue = item.options[idx];
-            }
+            newValue = (item.options[idx].includes('自定义') || item.options[idx].includes('Manual')) 
+                ? await ask(`\n${lang === 'zh' ? '请输入内容' : 'Please input'}: `)
+                : item.options[idx];
         }
     } else {
-        newValue = await ask(`\n请输入新值 (直接回车保持不变): `);
+        newValue = await ask(`\n${ui.t('newValue')}: `);
     }
 
     if (newValue !== '') {
         engine.set(config, item.key, newValue);
         engine.write(config);
-        console.log(ui.msg('green', '\n✅ 配置已成功保存。'));
+        console.log(ui.msg('green', `\n${ui.t('saveOk')}`));
         await new Promise(r => setTimeout(r, 1000));
     }
 }
 
 async function subMenu(category) {
+    const lang = engine.getLang();
     while (true) {
         showHeader();
-        console.log(`\n${ui.msg('cyan', '【 ' + category.label + ' 】')}`);
+        console.log(`\n${ui.msg('cyan', '【 ' + category.label[lang] + ' 】')}`);
         const config = engine.read();
         
         category.items.forEach((item, index) => {
             const val = engine.get(config, item.key);
-            const displayVal = val === undefined ? ui.msg('red', '[尚未配置]') : ui.msg('green', val);
-            console.log(`  ${ui.msg('yellow', index + 1)}. ${item.label}: ${displayVal}`);
+            const displayVal = val === undefined ? ui.msg('red', `[${ui.t('none')}]`) : ui.msg('green', val);
+            console.log(`  ${ui.msg('yellow', index + 1)}. ${item.label[lang]}: ${displayVal}`);
         });
         
-        console.log(`\n  ${ui.msg('magenta', 'b')}. 返回主菜单`);
-        const choice = await ask(`\n👉 请选择要修改的项目编号: `);
+        console.log(`\n  ${ui.msg('magenta', 'b')}. ${ui.t('back')}`);
+        const choice = await ask(`\n👉 ${ui.t('editPrompt')}: `);
         
         if (choice.toLowerCase() === 'b') return;
         
@@ -90,62 +88,42 @@ async function subMenu(category) {
     }
 }
 
-async function initWizard() {
-    console.clear();
-    showHeader();
-    console.log(ui.msg('yellow', '\n--- ⚙️ OpenClaw 快速配置向导 ---'));
-    console.log(`本向导将协助您快速完成系统的核心初始化。`);
-    
-    const config = engine.read();
-    // 定义初始化必须的几项
-    const essentials = [
-        SCHEMA[0].items[0], // 主模型
-        SCHEMA[1].items[0], // 开启 Telegram
-        SCHEMA[1].items[1], // Telegram Token
-    ];
-    
-    for (const item of essentials) {
-        await handleEdit(config, item);
-    }
-    
-    console.log(`\n${ui.msg('green', '🎉 初始化核心配置已完成。')}`);
-    await ask('\n按回车键返回主菜单...');
-}
-
 async function main() {
     while (true) {
+        const lang = engine.getLang();
         showHeader();
-        console.log(`\n🚀 本工具由 ${ui.msg('bold', 'Jun')} 基于开源项目 ${ui.msg('blue', 'OpenClaw')} 定制开发。`);
+        console.log(`\n🚀 ${ui.t('baseOn')} ${ui.msg('blue', 'OpenClaw')}。`);
         
         SCHEMA.forEach((cat, index) => {
-            console.log(`  ${ui.msg('yellow', index + 1)}. ${ui.categoryIcon(cat.id)} ${cat.label}`);
+            console.log(`  ${ui.msg('yellow', index + 1)}. ${ui.categoryIcon(cat.id)} ${cat.label[lang]}`);
         });
         
         console.log(ui.msg('gray', '\n' + ui.separator));
-        console.log(`  ${ui.msg('cyan', '0')}. 🌟 快速初始化向导`);
-        console.log(`  ${ui.msg('cyan', 'r')}. 🔄 重启网关服务`);
-        console.log(`  ${ui.msg('cyan', 'q')}. 🚪 退出管理中心`);
+        console.log(`  ${ui.msg('cyan', '0')}. 🌟 ${ui.t('init')}`);
+        console.log(`  ${ui.msg('cyan', 'l')}. 🌐 ${ui.t('langSwitch')}`);
+        console.log(`  ${ui.msg('cyan', 'r')}. 🔄 ${ui.t('restart')}`);
+        console.log(`  ${ui.msg('cyan', 'q')}. 🚪 ${ui.t('exit')}`);
         
-        const choice = await ask(`\n👉 请选择分类编号或操作指令: `);
+        const choice = await ask(`\n👉 ${ui.t('mainPrompt')}: `);
         
-        if (choice.toLowerCase() === 'q') {
-            console.log('\n再见，系统已退出。');
-            process.exit(0);
+        if (choice.toLowerCase() === 'q') process.exit(0);
+        if (choice.toLowerCase() === 'l') {
+            engine.setLang(lang === 'zh' ? 'en' : 'zh');
+            continue;
         }
-        
         if (choice.toLowerCase() === 'r') {
-            try { 
-                execSync('openclaw gateway restart'); 
-                console.log(ui.msg('green', '\n✅ 重启信号已发送至网关。')); 
-            } catch(e) { 
-                console.log(ui.msg('red', '\n❌ 指令发送失败，请确保网关已在后台运行。')); 
-            }
+            console.log(`\n${ui.msg('yellow', ui.t('restarting'))}`);
+            try { execSync('openclaw gateway restart'); console.log(ui.msg('green', ui.t('restartOk'))); } 
+            catch(e) { console.log(ui.msg('red', 'ERROR')); }
             await new Promise(r => setTimeout(r, 1500));
             continue;
         }
         
         if (choice === '0') {
-            await initWizard();
+            const config = engine.read();
+            await handleEdit(config, SCHEMA[0].items[0]);
+            await handleEdit(config, SCHEMA[1].items[0]);
+            await handleEdit(config, SCHEMA[1].items[1]);
             continue;
         }
         
