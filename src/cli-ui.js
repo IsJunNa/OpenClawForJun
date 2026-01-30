@@ -16,9 +16,9 @@ const colors = {
 
 const i18n = {
     zh: {
-        title: "OpenClaw 管理中心",
-        subtitle: "极简 · 专业",
-        author: "作者",
+        title: "OpenClaw 智能管理中心",
+        author: "作者: Jun",
+        subtitle: "极简 · 专业 · 免费",
         license: "协议",
         free: "本工具完全免费",
         mainPrompt: "请选择分类编号或操作指令",
@@ -38,8 +38,9 @@ const i18n = {
         none: "未设置"
     },
     en: {
-        title: "OpenClaw Manager",
-        subtitle: "Minimal · Pro",
+        title: "OpenClaw Management Center",
+        author: "Author: Jun",
+        subtitle: "Minimal · Pro · Free",
         author: "Author",
         license: "License",
         free: "Fully Free Tool",
@@ -68,19 +69,34 @@ module.exports = {
     setLang(l) { currentLang = l; },
     t(key) { return i18n[currentLang][key] || key; },
     
-    banner: `
-    ┌──────────────────────────────────────────────────┐
-    │           ${colors.bold}OpenClaw Management Center${colors.reset}             │
-    │           ${colors.gray}Simplified & Professional${colors.reset}              │
-    └──────────────────────────────────────────────────┘
-    `,
+    getBanner() {
+        const text = i18n[currentLang];
+        return `
+    ${colors.cyan}┌──────────────────────────────────────────────────┐${colors.reset}
+    ${colors.cyan}│${colors.reset}                                                  ${colors.cyan}│${colors.reset}
+    ${colors.cyan}│${colors.reset}                ${colors.yellow}      __${colors.reset}                        ${colors.cyan}│${colors.reset}
+    ${colors.cyan}│${colors.reset}                ${colors.yellow}    <(o )___${colors.reset}                    ${colors.cyan}│${colors.reset}
+    ${colors.cyan}│${colors.reset}                ${colors.yellow}     ( ._> /${colors.reset}                    ${colors.cyan}│${colors.reset}
+    ${colors.cyan}│${colors.reset}                ${colors.yellow}      \`---' ${colors.reset}                    ${colors.cyan}│${colors.reset}
+    ${colors.cyan}│${colors.reset}                                                  ${colors.cyan}│${colors.reset}
+    ${colors.cyan}│${colors.reset}           ${colors.bold}${this.centerText(text.title, 39)}${colors.reset} ${colors.cyan}│${colors.reset}
+    ${colors.cyan}│${colors.reset}           ${colors.gray}${this.centerText(text.author, 39)}${colors.reset} ${colors.cyan}│${colors.reset}
+    ${colors.cyan}└──────────────────────────────────────────────────┘${colors.reset}
+    `;
+    },
+
+    centerText(text, width) {
+        const len = text.replace(/[\u4e00-\u9fa5]/g, 'aa').length;
+        const pad = Math.max(0, Math.floor((width - len) / 2));
+        return ' '.repeat(pad) + text + ' '.repeat(width - len - pad);
+    },
 
     separator: '──────────────────────────────────────────────────',
     
     msg(color, text) { return `${colors[color] || ''}${text}${colors.reset}`; },
 
     categoryIcon(id) {
-        const icons = { general: '⚙️', channels: '📱', security: '🛡️' };
+        const icons = { core: '🧠', channels: '📱', security: '🛡️' };
         return icons[id] || '•';
     }
 };

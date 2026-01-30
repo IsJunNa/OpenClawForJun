@@ -2,7 +2,7 @@
 
 > **OpenClaw 一键极速部署与多语言配置管理套件**
 
-[![Version](https://img.shields.io/badge/Version-1.5.0-blue.svg)](https://github.com/IsJunNa/OpenClawForJun)
+[![Version](https://img.shields.io/badge/Version-1.6.0-blue.svg)](https://github.com/IsJunNa/OpenClawForJun)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 `OpenClawForJun` 是一款专业的 **OpenClaw (原 Clawd)** 管理增强工具。它提供了一个极致简化的配置界面，让用户能够通过直观的 CLI 数字菜单管理 AI 助手，支持中英文实时切换。

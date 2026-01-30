@@ -23,8 +23,7 @@ async function ask(question) {
 function showHeader() {
     console.clear();
     ui.setLang(engine.getLang());
-    console.log(ui.msg('blue', ui.banner));
-    console.log(`   ${ui.msg('gray', `Author: Jun | License: MIT | Professional Suite`)}`);
+    console.log(ui.getBanner());
     console.log(ui.msg('gray', ui.separator));
 }
 
