@@ -2,7 +2,7 @@
 
 > **OpenClaw 一键部署 + 全中文配置管理**
 
-[![Version](https://img.shields.io/badge/Version-3.0.0-blue.svg)](https://github.com/IsJunNa/OpenClawForJun)
+[![Version](https://img.shields.io/badge/Version-3.0.1-blue.svg)](https://github.com/IsJunNa/OpenClawForJun)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 专为 [OpenClaw](https://openclaw.ai) 设计的中文配置管理工具，通过直观的交互式菜单管理 AI 助手的所有配置。
