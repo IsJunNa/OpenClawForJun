@@ -8,39 +8,44 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+VERSION="3.0.4"
+
 echo -e "${CYAN}
-    ┌──────────────────────────────────────────────────┐
-    │                                                  │
-    │                  __                              │
-    │                <(o )___                          │
-    │                 ( ._> /                          │
-    │                  \`---'                           │
-    │            ~~~~~~~~~~~~~~~~~~                    │
-    │                                                  │
-    │            OpenClaw 智能管理中心                 │
-    │               作者: Jun | v2.0.2                 │
-    └──────────────────────────────────────────────────┘
+──────────────────────────────────────────────────
+  OpenClaw 配置管理工具
+  版本: v${VERSION} | 作者: Jun
+──────────────────────────────────────────────────
 ${NC}"
 
-echo -e "${GREEN}==================================================${NC}"
-echo -e "${GREEN}   🦆 OpenClawForJun 全自动部署脚本 (v2.0.2)      ${NC}"
-echo -e "${GREEN}   作者: Jun | 高亮交互稳定版 | 免费开源          ${NC}"
-echo -e "${GREEN}==================================================${NC}"
+echo -e "${GREEN}正在部署 OpenClawForJun...${NC}"
 
 # 1. 核心依赖安装 (Node.js)
 if ! command -v node &> /dev/null; then
-    echo -e "\n${YELLOW}正在准备 Node.js 环境...${NC}"
-    # (此处省略具体安装逻辑，保持原逻辑一致)
+    echo -e "\n${YELLOW}[1/4] 正在安装 Node.js...${NC}"
+    if command -v brew &> /dev/null; then
+        brew install node
+    elif command -v apt-get &> /dev/null; then
+        sudo apt-get update && sudo apt-get install -y nodejs npm
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y nodejs npm
+    else
+        echo -e "${RED}请手动安装 Node.js v22+${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}✓ Node.js 已安装${NC}"
 fi
 
 # 2. OpenClaw 核心安装
 if ! command -v openclaw &> /dev/null; then
-    echo -e "\n${YELLOW}正在安装 OpenClaw 核心...${NC}"
+    echo -e "\n${YELLOW}[2/4] 正在安装 OpenClaw 核心...${NC}"
     sudo npm install -g openclaw || npm install -g openclaw
+else
+    echo -e "${GREEN}✓ OpenClaw 已安装${NC}"
 fi
 
 # 3. 同步管理工具并安装依赖
-echo -e "\n${YELLOW}[3/4] 🛠️ 正在同步代码并安装交互组件...${NC}"
+echo -e "\n${YELLOW}[3/4] 正在同步代码...${NC}"
 INSTALL_DIR="$HOME/OpenClawForJun"
 if [ -d "$INSTALL_DIR" ]; then
     cd "$INSTALL_DIR" && git fetch --all && git reset --hard origin/main
@@ -49,17 +54,17 @@ else
     cd "$INSTALL_DIR"
 fi
 
-# --- 关键修复：确保在本地安装依赖 ---
-echo -e "   - 正在安装高亮菜单组件 (enquirer)..."
+# 安装依赖
+echo -e "${YELLOW}   安装依赖...${NC}"
 npm install --production
 
-# --- 链接全局命令 ---
-echo -e "   - 正在配置全局快速启动命令..."
+# 链接全局命令
+echo -e "\n${YELLOW}[4/4] 配置全局命令...${NC}"
 chmod +x src/index.js
 sudo npm install -g . || npm install -g .
 
 # 4. 完成
-echo -e "\n${GREEN}==================================================${NC}"
-echo -e "${GREEN}   🎉 部署圆满成功！${NC}"
-echo -e "   您可以直接输入 ${YELLOW}openclaw-jun${NC} 开启管理。"
-echo -e "${GREEN}==================================================${NC}"
+echo -e "\n${GREEN}──────────────────────────────────────────────────${NC}"
+echo -e "${GREEN}✓ 部署成功！${NC}"
+echo -e "  运行 ${YELLOW}openclaw-jun${NC} 开始使用"
+echo -e "${GREEN}──────────────────────────────────────────────────${NC}"

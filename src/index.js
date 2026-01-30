@@ -138,6 +138,24 @@ async function editConfig(config, item) {
             newVal = newVal ? [newVal] : [];
         }
         engine.set(config, item.key, newVal);
+
+        // 选择模型后提示输入 API Key
+        if (item.key.includes('model.primary') && newVal && newVal.includes('/')) {
+            const provider = newVal.split('/')[0];
+            console.log(ui.info(`模型 ${newVal} 需要 API Key`));
+            try {
+                const keyPrompt = new Input({ message: `请输入 ${provider} API Key:` });
+                const apiKey = await keyPrompt.run();
+                if (apiKey) {
+                    engine.set(config, 'auth.profiles.default.apiKey', apiKey);
+                    engine.set(config, 'auth.profiles.default.provider', provider);
+                    console.log(ui.success('API Key 已保存'));
+                }
+            } catch (e) {
+                // 用户取消
+            }
+        }
+
         engine.write(config);
         console.log(ui.success(ui.t('saveOk')));
         await sleep(400);
@@ -200,7 +218,6 @@ async function subMenu(cat) {
             }
 
             choices.push({ name: '_sep2', message: '', role: 'separator' });
-            choices.push({ name: 'back', message: `${ui.colors.magenta}← ${ui.t('back')}${ui.colors.reset}` });
 
             const prompt = new Select({
                 message: '选择',
@@ -264,9 +281,9 @@ async function main() {
         });
 
         choices.push({ name: '_sep', message: '', role: 'separator' });
-        choices.push({ name: 'lang', message: `[🌐] ${ui.t('langSwitch')}` });
-        choices.push({ name: 'restart', message: `[🔄] ${ui.t('restart')}` });
-        choices.push({ name: 'exit', message: `[✕] ${ui.t('exit')}` });
+        choices.push({ name: 'lang', message: `🌐 ${ui.t('langSwitch')}` });
+        choices.push({ name: 'restart', message: `🔄 ${ui.t('restart')}` });
+        choices.push({ name: 'exit', message: `✕ ${ui.t('exit')}` });
 
         let choice;
         try {
