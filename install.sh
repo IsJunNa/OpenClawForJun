@@ -81,15 +81,18 @@ else
 fi
 
 # 3. 安装中文管理工具
-echo -e "\n${YELLOW}[3/4] 🛠️ 正在配置管理中心 (OpenClawForJun)...${NC}"
+echo -e "\n${YELLOW}[3/4] 🛠️ 正在同步管理中心 (OpenClawForJun)...${NC}"
 INSTALL_DIR="$HOME/OpenClawForJun"
 if [ -d "$INSTALL_DIR" ]; then
-    cd "$INSTALL_DIR" && git pull
+    echo -e "   - 检测到旧版本，正在强制同步最新代码..."
+    cd "$INSTALL_DIR" && git fetch --all && git reset --hard origin/main
 else
+    echo -e "   - 正在拉取全新代码库..."
     git clone https://github.com/IsJunNa/OpenClawForJun.git "$INSTALL_DIR"
     cd "$INSTALL_DIR"
 fi
 
+echo -e "   - 正在更新全局指令..."
 sudo npm install -g . || npm install -g .
 
 # 4. 完成

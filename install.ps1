@@ -45,12 +45,13 @@ if (!(Get-Command openclaw -ErrorAction SilentlyContinue)) {
 }
 
 # 3. 配置管理工具
-Write-Host "`n[3/4] 🛠️ 正在部署 OpenClawForJun..." -ForegroundColor Yellow
+Write-Host "`n[3/4] 🛠️ 正在同步 OpenClawForJun 最新代码..." -ForegroundColor Yellow
 $InstallDir = Join-Path $HOME "OpenClawForJun"
 
 if (Test-Path $InstallDir) {
     Set-Location $InstallDir
-    git pull
+    git fetch --all
+    git reset --hard origin/main
 } else {
     git clone https://github.com/IsJunNa/OpenClawForJun.git $InstallDir
     Set-Location $InstallDir
