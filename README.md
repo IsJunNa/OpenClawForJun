@@ -1,85 +1,84 @@
 # 🤖 OpenClawForJun
 
-> **一键极速部署 OpenClaw & 全中文配置管理套件**
+> **Professional One-Click Deployment & Chinese Management Suite for OpenClaw**
 
-[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](https://github.com/IsJunNa/OpenClawForJun)
+[![Version](https://img.shields.io/badge/Version-1.2.0-blue.svg)](https://github.com/IsJunNa/OpenClawForJun)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Dependencies](https://img.shields.io/badge/Core-OpenClaw-orange.svg)](https://github.com/openclaw/openclaw)
+[![Core](https://img.shields.io/badge/Core-OpenClaw-orange.svg)](https://github.com/openclaw/openclaw)
 
-`OpenClawForJun` 是专为中文用户设计的 **OpenClaw (原 Clawd)** 增强工具包。它通过全自动化的安装流程和直观的中文 CLI 交互界面，解决了原生工具配置复杂、语言障碍等痛点。
-
----
-
-## 📸 界面预览
-
-![CLI Menu](https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/assets/preview.png)
-*(注：上图为 CLI 运行示意图，涵盖分层菜单、多选修改等功能)*
+`OpenClawForJun` 是一款专为 **OpenClaw (原 Clawd)** 设计的高级中文管理工具。它通过全自动的安装流程、极致简化的数字交互菜单以及深度的全量配置汉化，极大地降低了 AI 智能助手的部署与维护门槛。
 
 ---
 
-## ✨ 核心亮点
+## 📺 界面预览
 
-### 1. 🚀 自动化环境搭建
-- **一行命令**：自动安装 Node.js 依赖、OpenClaw 核心及管理工具。
-- **环境自检**：安装前自动校验系统版本、Node.js 环境，确保一次成功。
+### 主菜单 (Main Menu)
+![Main Menu](https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/assets/preview_main.png)
 
-### 2. 🏮 母语级配置体验
-- **全量汉化**：将数百项 JSON 配置转化为大白话，每一项都配有中文说明。
-- **分层管理**：采用分级目录（核心设置、频道管理、安全策略等），逻辑条理清晰。
+### 极速交互示例 (Fast Selection)
+![Edit Selection](https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/assets/preview_edit.png)
 
-### 3. ⌨️ 高效交互逻辑
-- **数字选单**：摒弃繁琐的文本输入，支持通过 `1 / 2` 快速切换布尔值（开启/关闭）或选择枚举项。
-- **快速初始化**：内置向导，三分钟完成从零到上线的所有核心步骤。
+---
 
-### 4. 🛠️ 运维一键化
-- **热重启集成**：配置修改后可在工具内直接重启 OpenClaw 网关，无需手动执行复杂指令。
+## ✨ 核心特性
+
+### 1. 🚀 全自动环境交付
+- **极速部署**：自动处理 Node.js 运行时、Git 环境以及 OpenClaw 全量依赖。
+- **全局关联**：安装后自动配置全局命令，随时随地开启管理。
+
+### 2. 🏮 深度本地化体验
+- **配置全映射**：将原生复杂的 `openclaw.json` 映射为清晰的中文描述。
+- **内置建议**：每个配置项均提供官方建议值与详尽的功能解释。
+
+### 3. ⌨️ 全数字驱动交互
+- **零文本输入**：布尔值切换（1开启/2关闭）、枚举列表选择（1,2,3...），最大限度减少手动输入带来的错误。
+- **多级分类**：采用层级化目录管理（常规、频道、工具、安全、系统），逻辑条理分明。
+
+### 4. 🛠️ 自动化初始化向导
+- **新手友好**：内置初始化 Workflow，三分钟引导完成从 API 配置到上线全流程。
 
 ---
 
 ## 🚀 快速开始
 
-### 方式一：一键安装（推荐）
-
-在终端中运行以下命令：
+在终端（macOS / Linux）中执行以下命令：
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash
 ```
 
-### 方式二：手动部署
+### 🎮 进入管理中心
 
+部署完成后，在任意目录下输入：
 ```bash
-git clone https://github.com/IsJunNa/OpenClawForJun.git
-cd OpenClawForJun
-npm install -g .
+openclaw-jun
 ```
 
-安装完成后，在终端输入 `openclaw-jun` 即可启动管理中心。
+---
+
+## 🔧 配置管理覆盖范围
+
+| 分类 | 包含配置项 (部分) |
+| :--- | :--- |
+| **基础核心** | AI 主模型选择、思考深度、时区设定、时间格式 |
+| **通信频道** | Telegram, Discord, WhatsApp, Slack 开启状态与 Token |
+| **扩展工具** | 联网搜索 (Brave/Perplexity)、API Key、网页抓取、视觉分析 |
+| **系统安全** | 终端指令权限、动态配置修改权限、重启权限、安全等级 |
+| **网关底层** | 端口绑定、监听地址、日志详细程度 (Log Level) |
 
 ---
 
-## 🛠️ 配置覆盖范围
+## ⚖️ 法律与权利声明
 
-本工具支持管理 OpenClaw 的绝大部分核心配置，包括但不限于：
-- **核心模型**：Google Gemini, OpenAI, Claude, Ollama 等模型路径设置。
-- **消息频道**：Telegram (Bot Token, DM Policy), Discord, WhatsApp, Slack 等。
-- **搜索工具**：Brave Search, Perplexity API 密钥与服务商切换。
-- **安全权限**：终端命令执行控制、配置热修改权限、执行安全等级。
-- **系统设置**：网关端口绑定、时区设定、日志详细等级。
+1. **致敬开源**：本项目核心驱动来源于 [OpenClaw](https://github.com/openclaw/openclaw)，特此致谢。
+2. **纯净申明**：本项目为**完全免费**的开源工具，不含任何后门，亦不收集用户的任何敏感配置信息。
+3. **软件许可**：本项目脚本归 **Jun** 维护，基于 MIT 协议分发。
 
 ---
 
-## ⚖️ 权利与声明
+## ⭐ Star 鼓励
 
-1. **开源致敬**：核心功能由 [OpenClaw](https://github.com/openclaw/openclaw) 提供驱动，本项目仅作为管理增强插件。
-2. **纯净无毒**：本项目**完全免费**，且不会收集、上传任何用户的 API Key 或配置信息。
-3. **作者说明**：本项目脚本由 **Jun** 维护，遵循 MIT 开源协议。
+如果您觉得本项目对您的生产力有所提升，请点击右上角的 **Star**。您的支持是我们持续优化的源动力！
 
 ---
-
-## ⭐ 支持作者
-
-如果您觉得本项目对您有所帮助，请为本项目点一个 **Star**。
-
----
-*Powered by OpenClaw | Enhanced by Jun*
+*Developed by Jun | Dedicated to the OpenClaw Community*
