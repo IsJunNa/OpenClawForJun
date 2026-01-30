@@ -139,21 +139,13 @@ async function editConfig(config, item) {
         }
         engine.set(config, item.key, newVal);
 
-        // 选择模型后提示输入 API Key
-        if (item.key.includes('model.primary') && newVal && newVal.includes('/')) {
-            const provider = newVal.split('/')[0];
-            console.log(ui.info(`模型 ${newVal} 需要 API Key`));
-            try {
-                const keyPrompt = new Input({ message: `请输入 ${provider} API Key:` });
-                const apiKey = await keyPrompt.run();
-                if (apiKey) {
-                    engine.set(config, 'auth.profiles.default.apiKey', apiKey);
-                    engine.set(config, 'auth.profiles.default.provider', provider);
-                    console.log(ui.success('API Key 已保存'));
-                }
-            } catch (e) {
-                // 用户取消
-            }
+        // 模型选择后显示配置提示
+        if ((item.key.includes('model.primary') || item.key.includes('model.fallbacks')) && newVal && String(newVal).includes('/')) {
+            const modelStr = Array.isArray(newVal) ? newVal[0] : newVal;
+            const provider = modelStr.split('/')[0];
+            console.log(ui.info(`已选择 ${provider} 模型，请确保已在环境变量中配置对应的 API Key`));
+            console.log(ui.msg('gray', `  提示: 设置环境变量 ${provider.toUpperCase()}_API_KEY 或在 ~/.openclaw/openclaw.json 中配置`));
+            await sleep(1500);
         }
 
         engine.write(config);
@@ -275,15 +267,15 @@ async function main() {
             const style = ui.categoryStyle(cat.id);
             return {
                 name: String(i),
-                message: ui.formatCategory(cat.id, cat.label[lang]),
+                message: `   ${ui.formatCategory(cat.id, cat.label[lang])}`,
                 hint: style.desc[lang]
             };
         });
 
         choices.push({ name: '_sep', message: '', role: 'separator' });
-        choices.push({ name: 'lang', message: `🌐 ${ui.t('langSwitch')}` });
-        choices.push({ name: 'restart', message: `🔄 ${ui.t('restart')}` });
-        choices.push({ name: 'exit', message: `✕ ${ui.t('exit')}` });
+        choices.push({ name: 'lang', message: `   🌐 ${ui.t('langSwitch')}` });
+        choices.push({ name: 'restart', message: `   🔄 ${ui.t('restart')}` });
+        choices.push({ name: 'exit', message: `   🚪 ${ui.t('exit')}` });
 
         let choice;
         try {

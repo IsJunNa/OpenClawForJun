@@ -66,12 +66,17 @@ module.exports = {
     clearPath() { breadcrumb = []; },
     getPath() { return breadcrumb.join(' > '); },
 
-    // 简洁清爽的头部
+    // 鸭子游泳主题 banner
     getHeader(version) {
         const title = i18n[currentLang].title;
         const line = '─'.repeat(50);
+        const wave = '~'.repeat(50);
 
-        let header = `\n${colors.cyan}${line}${colors.reset}\n`;
+        let header = `\n${colors.yellow}`;
+        header += `       __      __      __\n`;
+        header += `    __(.)< __(.)> __(.)=\n`;
+        header += `    \\___)  \\___)  \\___)${colors.reset}\n`;
+        header += `${colors.cyan}${wave}${colors.reset}\n`;
         header += `${colors.bold}  ${title}${colors.reset}`;
         header += `${colors.gray}  v${version}${colors.reset}\n`;
         header += `${colors.cyan}${line}${colors.reset}\n`;
