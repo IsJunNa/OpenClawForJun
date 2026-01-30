@@ -1,6 +1,7 @@
 /**
  * OpenClawForJun 配置映射定义
  * 包含中英文双语支持
+ * 已根据最新 OpenClaw 插件化架构进行优化
  */
 
 module.exports = [
@@ -42,7 +43,7 @@ module.exports = [
             { 
                 key: "agents.defaults.userTimezone", 
                 label: { zh: "用户时区", en: "User Timezone" }, 
-                desc: { zh: "如 Asia/Shanghai", en: "e.g., Asia/Shanghai" }, 
+                desc: { zh: "建议 Asia/Shanghai", en: "e.g., Asia/Shanghai" }, 
                 type: "string" 
             }
         ]
@@ -51,12 +52,15 @@ module.exports = [
         id: "channels",
         label: { zh: "通信频道管理", en: "Messaging Channels" },
         items: [
-            { key: "channels.telegram.enabled", label: { zh: "Telegram - 状态", en: "Telegram - Enabled" }, desc: { zh: "启用机器人频道", en: "Enable TG Bot" }, type: "boolean" },
-            { key: "channels.telegram.botToken", label: { zh: "Telegram - 令牌", en: "Telegram - Token" }, desc: { zh: "Bot Token", en: "Bot Token" }, type: "string" },
-            { key: "channels.telegram.dmPolicy", label: { zh: "Telegram - 私聊策略", en: "Telegram - DM Policy" }, desc: { zh: "访问控制模式", en: "Access control policy" }, type: "enum", options: ["pairing", "allowlist", "open"] },
-            { key: "channels.discord.enabled", label: { zh: "Discord - 状态", en: "Discord - Enabled" }, desc: { zh: "启用 Discord 接入", en: "Enable Discord Bot" }, type: "boolean" },
-            { key: "channels.discord.token", label: { zh: "Discord - 令牌", en: "Discord - Token" }, desc: { zh: "Bot Token", en: "Bot Token" }, type: "string" },
-            { key: "channels.whatsapp.enabled", label: { zh: "WhatsApp - 状态", en: "WhatsApp - Enabled" }, desc: { zh: "启用 WhatsApp 接入", en: "Enable WhatsApp" }, type: "boolean" }
+            { key: "plugins.entries.telegram.enabled", label: { zh: "Telegram - 插件状态", en: "Telegram Plugin" }, desc: { zh: "启用 TG 插件", en: "Enable TG Plugin" }, type: "boolean" },
+            { key: "channels.telegram.enabled", label: { zh: "Telegram - 频道开关", en: "Telegram Channel" }, desc: { zh: "开启机器人通信", en: "Enable TG communication" }, type: "boolean" },
+            { key: "channels.telegram.botToken", label: { zh: "Telegram - 令牌", en: "Telegram - Token" }, desc: { zh: "Bot Token (必须是字符串)", en: "Bot Token (String required)" }, type: "string" },
+            { key: "channels.telegram.dmPolicy", label: { zh: "Telegram - 私聊策略", en: "Telegram - DM Policy" }, desc: { zh: "pairing/allowlist/open", en: "Access control policy" }, type: "enum", options: ["pairing", "allowlist", "open"] },
+            
+            { key: "plugins.entries.discord.enabled", label: { zh: "Discord - 插件状态", en: "Discord Plugin" }, desc: { zh: "启用 Discord 插件", en: "Enable Discord Plugin" }, type: "boolean" },
+            { key: "channels.discord.enabled", label: { zh: "Discord - 频道开关", en: "Discord Channel" }, desc: { zh: "开启机器人通信", en: "Enable Discord communication" }, type: "boolean" },
+            
+            { key: "plugins.entries.whatsapp.enabled", label: { zh: "WhatsApp - 插件状态", en: "WhatsApp Plugin" }, desc: { zh: "启用 WhatsApp 插件", en: "Enable WhatsApp Plugin" }, type: "boolean" }
         ]
     },
     {

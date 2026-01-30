@@ -92,7 +92,8 @@ else
     cd "$INSTALL_DIR"
 fi
 
-echo -e "   - 正在更新全局指令..."
+echo -e "   - 正在修复执行权限并更新全局指令..."
+chmod +x src/index.js
 sudo npm install -g . || npm install -g .
 
 # 4. 完成
