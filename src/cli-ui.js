@@ -1,5 +1,6 @@
 /**
  * OpenClawForJun UI 样式与翻译
+ * 交互优化版
  */
 
 const colors = {
@@ -10,109 +11,167 @@ const colors = {
     cyan: '\x1b[36m',
     magenta: '\x1b[35m',
     gray: '\x1b[90m',
+    white: '\x1b[97m',
+    black: '\x1b[30m',
     reset: '\x1b[0m',
-    bold: '\x1b[1m'
+    bold: '\x1b[1m',
+    dim: '\x1b[2m',
+    bgYellow: '\x1b[43m'
 };
 
 const i18n = {
     zh: {
-        title: "OpenClaw 智能管理中心",
-        author: "作者: Jun",
-        version: "当前版本",
-        mainPrompt: "请选择分类编号或操作指令",
-        back: "返回主菜单",
-        editPrompt: "请输入编号进行修改",
-        newValue: "请输入新值 (直接回车保持不变)",
-        saveOk: "✅ 配置已保存。",
-        restarting: "正在发送重启信号...",
-        restartOk: "✅ 指令已发送。",
-        exit: "退出管理中心",
-        langSwitch: "切换语言 (Switch Language)",
-        init: "快速初始化向导",
-        restart: "重启网关服务",
-        baseOn: "基于开源项目",
-        selectIdx: "请选择序号",
-        current: "当前",
-        none: "未设置"
+        title: "OpenClaw 配置管理",
+        version: "版本",
+        author: "Jun",
+        mainPrompt: "选择配置分类",
+        back: "返回",
+        saveOk: "已保存",
+        exit: "退出",
+        langSwitch: "English",
+        restart: "重启网关",
+        enterToContinue: "按 Enter 继续...",
+        currentPath: "当前位置",
+        tip: "提示",
+        configDesc: "配置说明"
     },
     en: {
-        title: "OpenClaw Management Center",
-        author: "Author: Jun",
-        version: "Version",
-        mainPrompt: "Choose a category or command",
-        back: "Back to Main Menu",
-        editPrompt: "Enter number to edit",
-        newValue: "Enter new value (Enter to skip)",
-        saveOk: "✅ Configuration saved.",
-        restarting: "Sending restart signal...",
-        restartOk: "✅ Signal sent.",
+        title: "OpenClaw Config Manager",
+        version: "Ver",
+        author: "Jun",
+        mainPrompt: "Select category",
+        back: "Back",
+        saveOk: "Saved",
         exit: "Exit",
-        langSwitch: "Switch Language (切换语言)",
-        init: "Fast Setup Wizard",
+        langSwitch: "中文",
         restart: "Restart Gateway",
-        baseOn: "Based on open-source project",
-        selectIdx: "Select index",
-        current: "Current",
-        none: "Not Set"
+        enterToContinue: "Press Enter...",
+        currentPath: "Location",
+        tip: "Tip",
+        configDesc: "Description"
     }
 };
 
 let currentLang = 'zh';
+let breadcrumb = [];  // 面包屑导航
 
 module.exports = {
     colors,
+
     setLang(l) { currentLang = l; },
+    getLang() { return currentLang; },
     t(key) { return i18n[currentLang][key] || key; },
-    
-    getBanner(version) {
-        const text = i18n[currentLang];
-        // 重新设计的可爱单鸭
-        const duck = [
-            `      ${colors.yellow}  __      ${colors.reset}`,
-            `      ${colors.yellow} <(o )___ ${colors.reset}`,
-            `      ${colors.yellow}  ( ._> / ${colors.reset}`,
-            `      ${colors.yellow}   \`---'  ${colors.reset}`,
-            ` ${colors.blue}~~~~~~~~~~~~~~~~~~${colors.reset}`
-        ];
 
-        const boxTop    = colors.cyan + '┌──────────────────────────────────────────────────┐' + colors.reset;
-        const boxEmpty  = colors.cyan + '│                                                  │' + colors.reset;
-        const boxBottom = colors.cyan + '└──────────────────────────────────────────────────┘' + colors.reset;
+    // 面包屑管理
+    pushPath(name) { breadcrumb.push(name); },
+    popPath() { breadcrumb.pop(); },
+    clearPath() { breadcrumb = []; },
+    getPath() { return breadcrumb.join(' > '); },
 
-        return `
-${boxTop}
-${boxEmpty}
-${this.wrapInBox(duck[0])}
-${this.wrapInBox(duck[1])}
-${this.wrapInBox(duck[2])}
-${this.wrapInBox(duck[3])}
-${this.wrapInBox(duck[4])}
-${boxEmpty}
-${this.wrapInBox(colors.bold + this.centerText(text.title, 48) + colors.reset)}
-${this.wrapInBox(colors.gray + this.centerText(`${text.author} | v${version}`, 48) + colors.reset)}
-${boxBottom}
-    `;
+    // Jun 主题 banner - 简洁版
+    getHeader(version) {
+        const line = '━'.repeat(50);
+
+        let header = `\n${colors.bgYellow}${colors.black}  🔧 JUN  ${colors.reset}`;
+        header += ` ${colors.bold}OpenClaw 配置管理${colors.reset}`;
+        header += `${colors.gray}  v${version}${colors.reset}\n`;
+        header += `${colors.yellow}${line}${colors.reset}\n`;
+
+        // 显示面包屑导航
+        if (breadcrumb.length > 0) {
+            header += `${colors.dim}  📍 ${breadcrumb.join(' → ')}${colors.reset}\n`;
+        }
+        return header;
     },
 
-    wrapInBox(content) {
-        const cleanContent = content.replace(/\x1b\[[0-9;]*m/g, '');
-        const visualLen = cleanContent.replace(/[\u4e00-\u9fa5]/g, 'aa').length;
-        const padding = 50 - visualLen;
-        const leftPad = Math.floor(padding / 2);
-        const rightPad = padding - leftPad;
-        return colors.cyan + '│' + colors.reset + ' '.repeat(leftPad) + content + ' '.repeat(rightPad) + colors.cyan + '│' + colors.reset;
+    // 显示配置说明（简化为一行）
+    showConfigInfo(title, desc) {
+        if (!desc) return '';
+        return `${colors.gray}  ↳ ${desc}${colors.reset}\n`;
     },
 
-    centerText(text, width) {
-        const len = text.replace(/[\u4e00-\u9fa5]/g, 'aa').length;
-        const pad = Math.max(0, Math.floor((width - len) / 2));
-        return ' '.repeat(pad) + text + ' '.repeat(Math.max(0, width - len - pad));
+    // 分组标题
+    groupTitle(text) {
+        return `\n${colors.cyan}━━━ ${text} ━━━${colors.reset}`;
     },
 
-    separator: '──────────────────────────────────────────────────',
-    msg(color, text) { return `${colors[color] || ''}${text}${colors.reset}`; },
-    categoryIcon(id) {
-        const icons = { core: '🧠', channels: '📱', security: '🛡️' };
-        return icons[id] || '•';
+    // 消息样式 
+    msg(color, text) {
+        return `${colors[color] || ''}${text}${colors.reset}`;
+    },
+
+    success(text) { return `${colors.green}✓ ${text}${colors.reset}`; },
+    error(text) { return `${colors.red}✗ ${text}${colors.reset}`; },
+    warning(text) { return `${colors.yellow}! ${text}${colors.reset}`; },
+    info(text) { return `${colors.cyan}i ${text}${colors.reset}`; },
+
+    // 分类图标和颜色
+    categoryStyle(id) {
+        const styles = {
+            core: { icon: '⚙️', color: 'cyan', desc: { zh: '模型、时区等基础配置', en: 'Model, timezone settings' } },
+            channels: { icon: '💬', color: 'blue', desc: { zh: '消息通道连接设置', en: 'Messaging channels' } },
+            whatsapp: { icon: '📱', color: 'green', desc: { zh: 'WhatsApp 聊天集成', en: 'WhatsApp integration' } },
+            tg: { icon: '✈️', color: 'blue', desc: { zh: 'Telegram 机器人', en: 'Telegram bot' } },
+            discord: { icon: '🎮', color: 'magenta', desc: { zh: 'Discord 服务器机器人', en: 'Discord bot' } },
+            slack: { icon: '💼', color: 'yellow', desc: { zh: 'Slack 工作区集成', en: 'Slack workspace' } },
+            signal: { icon: '🔐', color: 'blue', desc: { zh: 'Signal 安全通讯', en: 'Signal messaging' } },
+            mattermost: { icon: '👥', color: 'blue', desc: { zh: 'Mattermost 团队协作', en: 'Mattermost team' } },
+            imessage: { icon: '🍎', color: 'cyan', desc: { zh: 'macOS iMessage 集成', en: 'macOS iMessage' } },
+            sessions: { icon: '🔄', color: 'yellow', desc: { zh: '对话会话管理策略', en: 'Session management' } },
+            browser: { icon: '🌐', color: 'blue', desc: { zh: '浏览器自动化控制', en: 'Browser automation' } },
+            skills: { icon: '🧩', color: 'magenta', desc: { zh: 'AI 技能扩展', en: 'AI skill extensions' } },
+            cron: { icon: '⏰', color: 'yellow', desc: { zh: '定时自动任务', en: 'Scheduled tasks' } },
+            gateway: { icon: '🚀', color: 'cyan', desc: { zh: '网关服务配置', en: 'Gateway service' } },
+            security: { icon: '🔒', color: 'red', desc: { zh: '权限与安全控制', en: 'Security settings' } },
+            messages: { icon: '📝', color: 'gray', desc: { zh: '消息处理规则', en: 'Message rules' } },
+            logging: { icon: '📋', color: 'gray', desc: { zh: '日志输出设置', en: 'Logging settings' } }
+        };
+        return styles[id] || { icon: '•', color: 'gray', desc: { zh: '', en: '' } };
+    },
+
+    // 格式化分类选项
+    formatCategory(id, label) {
+        const style = this.categoryStyle(id);
+        return `${style.icon} ${label}`;
+    },
+
+    // 格式化配置值显示
+    formatValue(val, item) {
+        if (val === undefined || val === null || val === '') {
+            return `${colors.red}[未配置]${colors.reset}`;
+        }
+        if (typeof val === 'boolean') {
+            return val ? `${colors.green}● 开启${colors.reset}` : `${colors.gray}○ 关闭${colors.reset}`;
+        }
+        if (Array.isArray(val)) {
+            if (val.length === 0) return `${colors.gray}[空]${colors.reset}`;
+            // 显示完整数组内容
+            const content = val.join(', ');
+            if (content.length > 30) {
+                return `${colors.green}${content.slice(0, 27)}...${colors.reset}`;
+            }
+            return `${colors.green}${content}${colors.reset}`;
+        }
+        const str = String(val);
+        // 敏感字段隐藏
+        if (item && (item.key.includes('Token') || item.key.includes('apiKey') || item.key.includes('secret'))) {
+            if (str.length > 4) {
+                return `${colors.green}${str.slice(0, 4)}****${colors.reset}`;
+            }
+        }
+        if (str.length > 25) {
+            return `${colors.green}${str.slice(0, 22)}...${colors.reset}`;
+        }
+        return `${colors.green}${str}${colors.reset}`;
+    },
+
+    // 分隔线
+    separator(width = 45) {
+        return `${colors.gray}${'─'.repeat(width)}${colors.reset}`;
+    },
+
+    // 操作提示
+    actionHint(text) {
+        return `${colors.dim}${text}${colors.reset}`;
     }
 };

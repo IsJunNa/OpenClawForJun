@@ -2,7 +2,7 @@
 
 /**
  * OpenClawForJun 核心入口
- * 作者: Jun
+ * 交互优化版
  */
 
 const { execSync } = require('child_process');
@@ -17,194 +17,320 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-// --- 基础工具函数 ---
-function simpleAsk(q) {
+// 优雅退出
+process.on('SIGINT', () => {
+    console.log(ui.msg('yellow', '\n\n再见！'));
+    process.exit(0);
+});
+
+// 工具
+function ask(q) {
     return new Promise(resolve => rl.question(q, resolve));
+}
+
+function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
 }
 
 function isNewer(r, l) {
     const rv = r.split('.').map(Number);
     const lv = l.split('.').map(Number);
     for (let i = 0; i < 3; i++) {
-        if (rv[i] > lv[i]) return true;
-        if (rv[i] < lv[i]) return false;
+        if ((rv[i] || 0) > (lv[i] || 0)) return true;
+        if ((rv[i] || 0) < (lv[i] || 0)) return false;
     }
     return false;
 }
 
-// --- 版本检查 (不依赖外部库) ---
+// 版本检查
 async function checkUpdate() {
+    console.log(ui.info('检查更新...'));
     try {
-        const latestRaw = execSync(`curl -s --connect-timeout 2 "https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/package.json?v=${Date.now()}"`).toString();
-        const latestPkg = JSON.parse(latestRaw);
-        if (isNewer(latestPkg.version, pkg.version)) {
-            console.log(ui.msg('yellow', `\n🔔 检测到新版本: v${latestPkg.version} (当前本地: v${pkg.version})`));
-            console.log(`  1. 立即更新 (推荐)`);
-            console.log(`  2. 暂时忽略`);
-            const choice = await simpleAsk(`\n👉 请输入序号: `);
-            if (choice === '1') {
-                console.log(ui.msg('green', '\n正在执行全自动更新...'));
-                const cmd = process.platform === 'win32' 
+        const raw = execSync(
+            `curl -s --connect-timeout 3 --max-time 8 "https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/package.json?t=${Date.now()}"`,
+            { encoding: 'utf8', timeout: 10000 }
+        );
+        const remote = JSON.parse(raw);
+        if (isNewer(remote.version, pkg.version)) {
+            console.log(ui.warning(`新版本 v${remote.version} 可用 (当前 v${pkg.version})`));
+            console.log(`  1) 更新  2) 跳过`);
+            const c = await ask('选择: ');
+            if (c === '1') {
+                const cmd = process.platform === 'win32'
                     ? `powershell -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.ps1'))"`
                     : `curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash`;
                 execSync(cmd, { stdio: 'inherit' });
                 process.exit(0);
             }
+        } else {
+            console.log(ui.success('已是最新'));
         }
-    } catch (e) {}
+    } catch (e) {
+        console.log(ui.msg('gray', '跳过更新检查'));
+    }
+    await sleep(300);
 }
 
-// --- 动态加载交互组件 ---
+// enquirer
 let Select, Input, Toggle;
 try {
-    const enquirer = require('enquirer');
-    Select = enquirer.Select;
-    Input = enquirer.Input;
-    Toggle = enquirer.Toggle;
+    const eq = require('enquirer');
+    Select = eq.Select;
+    Input = eq.Input;
+    Toggle = eq.Toggle;
 } catch (e) {
-    console.log(ui.msg('red', '\n❌ 运行环境不完整 (缺失组件: enquirer)'));
-    console.log(ui.msg('yellow', '请重新运行安装脚本以修复环境:'));
-    console.log(ui.msg('cyan', 'curl -sSL https://raw.githubusercontent.com/IsJunNa/OpenClawForJun/main/install.sh | bash'));
+    console.log(ui.error('缺少 enquirer，请重新安装'));
     process.exit(1);
 }
 
-// --- 业务逻辑 ---
+// 头部
 function showHeader() {
     console.clear();
     ui.setLang(engine.getLang());
-    console.log(ui.getBanner(pkg.version));
+    console.log(ui.getHeader(pkg.version));
 }
 
-async function handleEdit(config, item) {
+// 编辑配置
+async function editConfig(config, item) {
     const lang = engine.getLang();
-    const currentVal = engine.get(config, item.key);
-    let newValue = '';
-    
-    if (item.type === 'boolean') {
-        const prompt = new Toggle({
-            message: item.label[lang],
-            enabled: '开启 (ON)',
-            disabled: '关闭 (OFF)'
-        });
-        newValue = String(await prompt.run());
-    } else if (item.type === 'enum') {
-        const prompt = new Select({
-            message: item.label[lang],
-            choices: item.options
-        });
-        const choice = await prompt.run();
-        if (choice.includes('自定义') || choice.includes('Manual')) {
-            const input = new Input({ message: '请输入自定义内容:' });
-            newValue = await input.run();
-        } else {
-            newValue = choice;
-        }
-    } else {
-        const prompt = new Input({
-            message: item.label[lang],
-            initial: currentVal
-        });
-        newValue = await prompt.run();
+    const current = engine.get(config, item.key);
+
+    // 显示配置说明
+    if (item.desc) {
+        console.log(ui.showConfigInfo(item.label[lang], item.desc[lang]));
     }
 
-    if (newValue !== '') {
-        if (item.isArray) newValue = [newValue];
-        engine.set(config, item.key, newValue);
-        
-        // 联动 Key 输入
-        if (item.needsKey) {
-            console.log(ui.msg('yellow', `\n🔑 检测到所选模型需要配对 API Key`));
-            const keyPrompt = new Input({ message: `请输入对应的 API Key:` });
-            const keyVal = await keyPrompt.run();
-            if (keyVal) {
-                // 暂时保存在默认路径，后续可根据 schema 扩展
-                engine.set(config, 'auth.profiles.default.apiKey', keyVal);
-                engine.set(config, 'auth.profiles.default.provider', newValue.split('/')[0]);
-                engine.set(config, 'auth.profiles.default.mode', 'api_key');
-            }
-        }
-        
-        engine.write(config);
-        console.log(ui.msg('green', `\n✅ 配置已保存`));
-        await new Promise(r => setTimeout(r, 800));
-    }
-}
-
-async function subMenu(category) {
-    const lang = engine.getLang();
-    while (true) {
-        showHeader();
-        const config = engine.read();
-        const choices = [];
-        
-        if (category.subCategories) {
-            category.subCategories.forEach(sub => choices.push({ name: sub.id, message: sub.label[lang] }));
-        } else {
-            if (category.specialActions) {
-                category.specialActions.forEach(act => choices.push({ name: 'act_' + act.id, message: ui.msg('yellow', '⚡ ' + act.label[lang]) }));
-            }
-            category.items.forEach((item, i) => {
-                const val = engine.get(config, item.key);
-                choices.push({ name: i, message: `${item.label[lang]}: ${val === undefined ? ui.msg('red', '[未设置]') : ui.msg('green', val)}` });
+    let newVal;
+    try {
+        if (item.type === 'boolean') {
+            const p = new Toggle({
+                message: item.label[lang],
+                enabled: '开启',
+                disabled: '关闭',
+                initial: current === true
             });
-        }
-        choices.push({ name: 'back', message: ui.msg('magenta', '⬅️ ' + ui.t('back')) });
-
-        const prompt = new Select({
-            message: `【 ${category.label[lang]} 】`,
-            choices: choices
-        });
-
-        const choice = await prompt.run();
-        if (choice === 'back') return;
-
-        if (category.subCategories) {
-            const sub = category.subCategories.find(s => s.id === choice);
-            await subMenu(sub);
-        } else if (String(choice).startsWith('act_')) {
-            const actId = choice.replace('act_', '');
-            const action = category.specialActions.find(a => a.id === actId);
-            console.log(ui.msg('cyan', `\n🚀 正在执行: ${action.command}...`));
-            try { execSync(action.command, { stdio: 'inherit' }); } catch(e) {}
-            await simpleAsk('\n操作执行完毕，按回车返回...');
+            newVal = await p.run();
+        } else if (item.type === 'enum') {
+            const p = new Select({
+                message: item.label[lang],
+                choices: item.options
+            });
+            const choice = await p.run();
+            if (choice === '自定义') {
+                const inp = new Input({ message: '输入值:', initial: current || '' });
+                newVal = await inp.run();
+            } else {
+                newVal = choice;
+            }
         } else {
-            await handleEdit(config, category.items[choice]);
+            const p = new Input({
+                message: item.label[lang],
+                initial: current || ''
+            });
+            newVal = await p.run();
         }
+    } catch (e) {
+        return; // 取消
+    }
+
+    if (newVal !== undefined && newVal !== current) {
+        if (item.isArray && !Array.isArray(newVal)) {
+            newVal = newVal ? [newVal] : [];
+        }
+        engine.set(config, item.key, newVal);
+
+        // 模型选择后提示输入 API Key
+        if (item.needsApiKey && newVal && String(newVal).includes('/')) {
+            const modelStr = Array.isArray(newVal) ? newVal[0] : newVal;
+            const provider = modelStr.split('/')[0];
+            if (provider !== 'ollama') {
+                console.log(ui.info(`${provider} 模型需要 API Key`));
+                try {
+                    const keyPrompt = new Input({ message: `请输入 ${provider.toUpperCase()} API Key (留空跳过):` });
+                    const apiKey = await keyPrompt.run();
+                    if (apiKey && apiKey.trim()) {
+                        console.log(ui.msg('yellow', `请设置环境变量: export ${provider.toUpperCase()}_API_KEY="${apiKey.trim()}"`));
+                        console.log(ui.msg('gray', '或添加到 ~/.zshrc 或 ~/.bashrc 后运行 source ~/.zshrc'));
+                    }
+                } catch (e) {
+                    // 用户取消
+                }
+            }
+        }
+
+        engine.write(config);
+        console.log(ui.success(ui.t('saveOk')));
+        await sleep(400);
     }
 }
 
+// 子菜单
+async function subMenu(cat) {
+    const lang = engine.getLang();
+    ui.pushPath(cat.label[lang]);
+
+    try {
+        while (true) {
+            showHeader();
+            const config = engine.read();
+            const choices = [];
+
+            // 分类描述
+            const style = ui.categoryStyle(cat.id);
+            if (style.desc[lang]) {
+                console.log(ui.msg('gray', `  ${style.desc[lang]}`));
+            }
+            console.log('');
+
+            if (cat.subCategories) {
+                // 子分类列表
+                cat.subCategories.forEach(sub => {
+                    const subStyle = ui.categoryStyle(sub.id);
+                    choices.push({
+                        name: sub.id,
+                        message: ui.formatCategory(sub.id, sub.label[lang]),
+                        hint: subStyle.desc[lang]
+                    });
+                });
+            } else {
+                // 特殊操作
+                if (cat.specialActions) {
+                    console.log(ui.msg('yellow', '  ▸ 快捷操作'));
+                    cat.specialActions.forEach(act => {
+                        choices.push({
+                            name: 'act_' + act.id,
+                            message: `  ${ui.colors.yellow}▶${ui.colors.reset} ${act.label[lang]}`,
+                            hint: act.command
+                        });
+                    });
+                    choices.push({ name: '_sep', message: ui.separator(40), role: 'separator' });
+                    console.log(ui.msg('cyan', '  ▸ 配置项'));
+                }
+
+                // 配置项列表
+                cat.items.forEach((item, i) => {
+                    const val = engine.get(config, item.key);
+                    const display = ui.formatValue(val, item);
+                    choices.push({
+                        name: String(i),
+                        message: `  ${item.label[lang]}`,
+                        hint: display
+                    });
+                });
+            }
+
+            choices.push({ name: '_sep2', message: '', role: 'separator' });
+
+            const prompt = new Select({
+                message: '选择',
+                choices: choices.filter(c => c.role !== 'separator'),
+                pointer: '❯'
+            });
+
+            let choice;
+            try {
+                choice = await prompt.run();
+            } catch (e) {
+                break;
+            }
+
+            if (choice === 'back') break;
+
+            if (cat.subCategories) {
+                const sub = cat.subCategories.find(s => s.id === choice);
+                if (sub) await subMenu(sub);
+            } else if (choice.startsWith('act_')) {
+                const act = cat.specialActions.find(a => a.id === choice.replace('act_', ''));
+                if (act) {
+                    console.log(ui.info(`执行: ${act.command}`));
+                    try {
+                        execSync(act.command, { stdio: 'inherit' });
+                        console.log(ui.success('完成'));
+                    } catch (e) {
+                        console.log(ui.error('失败'));
+                    }
+                    await ask(ui.t('enterToContinue'));
+                }
+            } else {
+                const idx = parseInt(choice);
+                if (!isNaN(idx) && cat.items[idx]) {
+                    await editConfig(config, cat.items[idx]);
+                }
+            }
+        }
+    } finally {
+        ui.popPath();
+    }
+}
+
+// 主菜单
 async function main() {
     await checkUpdate();
+    ui.clearPath();
+
     while (true) {
         const lang = engine.getLang();
         showHeader();
-        
-        const choices = SCHEMA.map((cat, i) => ({ name: i, message: `${ui.categoryIcon(cat.id)} ${cat.label[lang]}` }));
-        choices.push({ name: 'lang', message: `🌐 ${ui.t('langSwitch')}` });
-        choices.push({ name: 'restart', message: `🔄 ${ui.t('restart')}` });
-        choices.push({ name: 'exit', message: `🚪 ${ui.t('exit')}` });
 
-        const prompt = new Select({
-            message: ui.t('mainPrompt'),
-            choices: choices
+        console.log(ui.msg('gray', '  选择要配置的功能模块\n'));
+
+        const choices = SCHEMA.map((cat, i) => {
+            const style = ui.categoryStyle(cat.id);
+            return {
+                name: String(i),
+                message: `   ${ui.formatCategory(cat.id, cat.label[lang])}`,
+                hint: style.desc[lang]
+            };
         });
 
-        const choice = await prompt.run();
-        if (choice === 'exit') process.exit(0);
-        if (choice === 'lang') { engine.setLang(lang === 'zh' ? 'en' : 'zh'); continue; }
-        if (choice === 'restart') {
-            console.log(ui.msg('yellow', `\n${ui.t('restarting')}`));
-            try { execSync('openclaw gateway restart'); console.log(ui.msg('green', ui.t('restartOk'))); } 
-            catch(e) { console.log(ui.msg('red', 'ERROR')); }
-            await new Promise(r => setTimeout(r, 1500));
+        choices.push({ name: '_sep', message: '', role: 'separator' });
+        choices.push({ name: 'lang', message: `   🌐 ${ui.t('langSwitch')}` });
+        choices.push({ name: 'restart', message: `   🔄 ${ui.t('restart')}` });
+        choices.push({ name: 'exit', message: `   🚪 ${ui.t('exit')}` });
+
+        let choice;
+        try {
+            const prompt = new Select({
+                message: ui.t('mainPrompt'),
+                choices: choices.filter(c => c.role !== 'separator'),
+                pointer: '❯'
+            });
+            choice = await prompt.run();
+        } catch (e) {
             continue;
         }
-        
-        if (SCHEMA[choice]) await subMenu(SCHEMA[choice]);
+
+        if (choice === 'exit') {
+            console.log(ui.msg('yellow', '\n再见！\n'));
+            process.exit(0);
+        }
+
+        if (choice === 'lang') {
+            engine.setLang(lang === 'zh' ? 'en' : 'zh');
+            continue;
+        }
+
+        if (choice === 'restart') {
+            console.log(ui.info(ui.t('restarting')));
+            try {
+                execSync('openclaw gateway restart', { stdio: 'inherit' });
+                console.log(ui.success(ui.t('restartOk')));
+            } catch (e) {
+                console.log(ui.error('失败'));
+            }
+            await sleep(800);
+            continue;
+        }
+
+        const idx = parseInt(choice);
+        if (!isNaN(idx) && SCHEMA[idx]) {
+            await subMenu(SCHEMA[idx]);
+        }
     }
 }
 
 main().catch(e => {
     if (e === '') process.exit(0);
     console.error(e);
+    process.exit(1);
 });
