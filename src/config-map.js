@@ -338,7 +338,7 @@ module.exports = [
         label: { zh: "模型深度配置", en: "AI Model Advanced" },
         items: [
             { key: "agents.defaults.thinking", label: { zh: "全局思考模式", en: "Thinking Mode" }, type: "enum", options: ["off", "low", "medium", "high"] },
-            { key: "agents.defaults.model.primary", label: { zh: "主模型", en: "Primary" }, type: "enum", needsKey: true, options: ["google-gemini-cli/gemini-3-flash-preview", "google-gemini-cli/gemini-3-pro-preview", "anthropic/claude-3-5-sonnet-latest", "openai/gpt-4o"] }
+            { key: "agents.defaults.model.primary", label: { zh: "主模型", en: "Primary" }, type: "enum", needsApiKey: true, options: ["google-gemini-cli/gemini-3-flash-preview", "google-gemini-cli/gemini-3-pro-preview", "anthropic/claude-3-5-sonnet-latest", "openai/gpt-4o"] }
         ]
     },
     {
