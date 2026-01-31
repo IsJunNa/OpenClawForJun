@@ -16,20 +16,18 @@ module.exports = [
                 type: "enum",
                 needsApiKey: true,
                 options: [
-                    "anthropic/claude-sonnet-4-5-20250929",
-                    "anthropic/claude-opus-4-5",
+                    "anthropic/claude-3-7-sonnet",
                     "anthropic/claude-3-5-sonnet",
-                    "openai/gpt-5.2",
+                    "openai/o3-mini",
                     "openai/gpt-4o",
-                    "openai/gpt-4-turbo",
-                    "google/gemini-3-pro-preview",
-                    "google/gemini-3-flash-preview",
+                    "google/gemini-2.0-pro-exp-02-05",
+                    "google/gemini-2.0-flash-thinking-exp-01-21",
                     "google/gemini-2.0-flash",
                     "google/gemini-1.5-pro",
+                    "deepseek/deepseek-reasoner",
                     "deepseek/deepseek-chat",
-                    "deepseek/deepseek-coder",
-                    "ollama/llama3",
-                    "ollama/qwen2",
+                    "ollama/llama3.3",
+                    "ollama/qwen2.5",
                     "自定义"
                 ]
             },
@@ -41,8 +39,8 @@ module.exports = [
                 isArray: true,
                 needsApiKey: true,
                 options: [
-                    "google/gemini-3-flash-preview",
                     "google/gemini-2.0-flash",
+                    "google/gemini-2.0-flash-thinking-exp-01-21",
                     "openai/gpt-4o-mini",
                     "openai/gpt-4-turbo",
                     "anthropic/claude-3-5-sonnet",
@@ -338,7 +336,7 @@ module.exports = [
         label: { zh: "模型深度配置", en: "AI Model Advanced" },
         items: [
             { key: "agents.defaults.thinking", label: { zh: "全局思考模式", en: "Thinking Mode" }, type: "enum", options: ["off", "low", "medium", "high"] },
-            { key: "agents.defaults.model.primary", label: { zh: "主模型", en: "Primary" }, type: "enum", needsApiKey: true, options: ["google-gemini-cli/gemini-3-flash-preview", "google-gemini-cli/gemini-3-pro-preview", "anthropic/claude-3-5-sonnet-latest", "openai/gpt-4o"] }
+            { key: "agents.defaults.model.primary", label: { zh: "主模型", en: "Primary" }, type: "enum", needsApiKey: true, options: ["google-gemini-cli/gemini-2.0-flash-thinking-exp-01-21", "google-gemini-cli/gemini-2.0-pro-exp-02-05", "google-gemini-cli/gemini-2.0-flash", "anthropic/claude-3-5-sonnet-latest", "openai/gpt-4o"] }
         ]
     },
     {
