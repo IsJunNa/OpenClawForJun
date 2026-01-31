@@ -43,10 +43,16 @@ module.exports = {
             if (!current[keys[i]]) current[keys[i]] = {};
             current = current[keys[i]];
         }
-        const valLower = String(value).toLowerCase();
-        if (valLower === 'true') value = true;
-        else if (valLower === 'false') value = false;
-        else if (!isNaN(value) && value.trim() !== '') value = Number(value);
-        current[keys[keys.length - 1]] = value;
+
+        // 类型转换增强
+        let finalValue = value;
+        if (typeof value === 'string') {
+            const valLower = value.toLowerCase().trim();
+            if (valLower === 'true') finalValue = true;
+            else if (valLower === 'false') finalValue = false;
+            else if (!isNaN(valLower) && valLower !== '') finalValue = Number(valLower);
+        }
+
+        current[keys[keys.length - 1]] = finalValue;
     }
 };
